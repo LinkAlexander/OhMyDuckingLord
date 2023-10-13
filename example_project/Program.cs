@@ -54,16 +54,19 @@ namespace Examples.Tutorial
                     this.WindowState = WindowState.Fullscreen;       
             // Move the exampleObject forward when pressing the w key
             if(e.Key == Keys.W)
-                exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -0.1f);
+                exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, 0.1f);
             // Move the exampleObject backward when pressing the s key
             if(e.Key == Keys.S)
-                exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, 0.1f);
+                exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -0.1f);
             //Move the exampleObject left when pressing the a key
             if(e.Key == Keys.A)
                 exampleObject.Transformation *= Matrix4.CreateTranslation(-0.1f, 0, 0);
             //Move the exampleObject right when pressing the d key
             if(e.Key == Keys.D)
                 exampleObject.Transformation *= Matrix4.CreateTranslation(0.1f, 0, 0);
+            //make exampleObject bigger when pressing the b key
+            if(e.Key == Keys.B)
+                 exampleObject.Transformation *= Matrix4.CreateScale(1.1f);
             
         }
 
@@ -156,4 +159,3 @@ namespace Examples.Tutorial
         }
     }
 }
-
