@@ -13,6 +13,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Runtime.InteropServices;
 
 #endregion --- Using Directives ---
 
@@ -64,12 +65,48 @@ namespace Examples.Tutorial
             //Move the exampleObject right when pressing the d key
             if(e.Key == Keys.D)
                 exampleObject.Transformation *= Matrix4.CreateTranslation(0.1f, 0, 0);
-            //make exampleObject bigger when pressing the b key
-            if(e.Key == Keys.B)
-                 exampleObject.Transformation *= Matrix4.CreateScale(1.1f);
-            
-        }
 
+            //Press the n key to rotate the exampleObject around the z axis, indifferent to position
+            if (e.Key == Keys.Left)
+            {
+                rotateObjectZ(exampleObject, 0.1f);
+            }
+            if (e.Key == Keys.Right)
+            {
+                rotateObjectZ(exampleObject, -0.1f);
+            }
+            if (e.Key == Keys.Up)
+            {
+                rotateObjectX(exampleObject, -0.1f);
+            }
+            if (e.Key == Keys.Down)
+            {
+                rotateObjectX(exampleObject, 0.1f);
+            }
+            //Press Backspace to reset the exampleObject to its original position
+            if (e.Key == Keys.Backspace) 
+            {
+                exampleObject.Transformation = Matrix4.CreateTranslation(0, 0, -5);
+            }
+        }
+        void rotateObjectX(ObjLoaderObject3D rotationobject, float angle)
+        {
+            Vector3 oldPostion = rotationobject.Transformation.ExtractTranslation();
+            Matrix4 translationtoOrigin = Matrix4.CreateTranslation(-oldPostion);
+            Matrix4 rotation = Matrix4.CreateRotationX(angle);
+            Matrix4 translationBack = Matrix4.CreateTranslation(oldPostion);
+            Matrix4 combinedMatrix = translationtoOrigin * rotation * translationBack;
+            rotationobject.Transformation *= combinedMatrix;
+        }
+        void rotateObjectZ(ObjLoaderObject3D rotationobject, float angle)
+        {
+            Vector3 oldPostion = rotationobject.Transformation.ExtractTranslation();
+            Matrix4 translationtoOrigin = Matrix4.CreateTranslation(-oldPostion);
+            Matrix4 rotation = Matrix4.CreateRotationZ(angle);
+            Matrix4 translationBack = Matrix4.CreateTranslation(oldPostion);
+            Matrix4 combinedMatrix = translationtoOrigin * rotation * translationBack;
+            rotationobject.Transformation *= combinedMatrix;
+        }
         protected override void OnLoad()
         {
             base.OnLoad();
