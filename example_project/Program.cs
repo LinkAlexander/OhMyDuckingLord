@@ -104,7 +104,9 @@ namespace Examples.Tutorial
         {
             // updateCounter simply increaes
             updateTime += (float)e.Time;
-         
+
+            CursorState cursorState = CursorState.Grabbed;
+            //https://opentk.net/learn/chapter1/9-camera.html?tabs=input-opentk4%2Cdelta-time-input-opentk4%2Ccursor-mode-opentk4%2Cmouse-move-opentk4%2Cscroll-opentk4 hier weiter machen bei "mouse input"
         }
 
 
