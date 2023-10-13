@@ -89,6 +89,7 @@ namespace Examples.Tutorial
                 exampleObject.Transformation = Matrix4.CreateTranslation(0, 0, -5);
             }
         }
+        //This function rotates the object around the x axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
         void rotateObjectX(ObjLoaderObject3D rotationobject, float angle)
         {
             Vector3 oldPostion = rotationobject.Transformation.ExtractTranslation();
@@ -98,6 +99,7 @@ namespace Examples.Tutorial
             Matrix4 combinedMatrix = translationtoOrigin * rotation * translationBack;
             rotationobject.Transformation *= combinedMatrix;
         }
+        //This function rotates the object around the Z axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
         void rotateObjectZ(ObjLoaderObject3D rotationobject, float angle)
         {
             Vector3 oldPostion = rotationobject.Transformation.ExtractTranslation();
