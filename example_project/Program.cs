@@ -77,6 +77,9 @@ namespace Examples.Tutorial
 
             // Loading the object
             exampleObject = new ObjLoaderObject3D("data/objects/duck_smooth.obj");
+            
+            //Once the Object is loaded, put it in front of the camera
+            exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -5);
 
             // Loading the texture
             woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
