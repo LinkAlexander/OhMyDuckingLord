@@ -76,10 +76,6 @@ namespace Examples.Tutorial
                 //Move the Camera backwards
                 exampleObject.Transformation *= Matrix4.CreateTranslation(1, 0, 0);
             }
-            if(e.Key == Keys.Up) 
-            { 
-                Camera.Position += new Vector3(0, 0, 1);
-            }
             
         }
 
