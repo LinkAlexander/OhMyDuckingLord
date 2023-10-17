@@ -14,6 +14,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Runtime.InteropServices;
+using OpenTK.Windowing.Common.Input;
 
 #endregion --- Using Directives ---
 
@@ -22,12 +23,13 @@ namespace Examples.Tutorial
 
     public class ExampleProject : GameWindow
     {
+        
         // the 3D-Object we load
         private ObjLoaderObject3D exampleObject;
 
-        // our textur-IDs
+        // our texture-IDs
         private int woodTexture;
-
+        
         // Materials
         private SimpleTextureMaterial simpleTextureMaterial;
         private Wobble2Material wobbleMaterial;
@@ -36,7 +38,8 @@ namespace Examples.Tutorial
         // Updating the time
         private float updateTime = 0;
 
-        public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
+        public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings, 
+            NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings) {
             Size = (width, height);
             this.KeyDown += KeyboardKeyDown;
@@ -69,19 +72,19 @@ namespace Examples.Tutorial
             //Press the n key to rotate the exampleObject around the z axis, indifferent to position
             if (e.Key == Keys.Left)
             {
-                rotateObjectZ(exampleObject, 0.1f);
+                RotateObjectZ(exampleObject, 0.1f);
             }
             if (e.Key == Keys.Right)
             {
-                rotateObjectZ(exampleObject, -0.1f);
+                RotateObjectZ(exampleObject, -0.1f);
             }
             if (e.Key == Keys.Up)
             {
-                rotateObjectX(exampleObject, -0.1f);
+                RotateObjectX(exampleObject, -0.1f);
             }
             if (e.Key == Keys.Down)
             {
-                rotateObjectX(exampleObject, 0.1f);
+                RotateObjectX(exampleObject, 0.1f);
             }
             //Press Backspace to reset the exampleObject to its original position
             if (e.Key == Keys.Backspace) 
@@ -90,29 +93,34 @@ namespace Examples.Tutorial
             }
         }
         //This function rotates the object around the x axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
-        void rotateObjectX(ObjLoaderObject3D rotationobject, float angle)
+        //TODO zum Objekt moven
+        void RotateObjectX(ObjLoaderObject3D rotationObject, float angle)
         {
-            Vector3 oldPostion = rotationobject.Transformation.ExtractTranslation();
-            Matrix4 translationtoOrigin = Matrix4.CreateTranslation(-oldPostion);
+            Vector3 oldPosition = rotationObject.Transformation.ExtractTranslation();
+            Matrix4 translationToOrigin = Matrix4.CreateTranslation(-oldPosition);
             Matrix4 rotation = Matrix4.CreateRotationX(angle);
-            Matrix4 translationBack = Matrix4.CreateTranslation(oldPostion);
-            Matrix4 combinedMatrix = translationtoOrigin * rotation * translationBack;
-            rotationobject.Transformation *= combinedMatrix;
+            Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
+            Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
+            rotationObject.Transformation *= combinedMatrix;
         }
         //This function rotates the object around the Z axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
-        void rotateObjectZ(ObjLoaderObject3D rotationobject, float angle)
+        //TODO zum Objekt moven
+        //TODO Auch für Y machen
+        void RotateObjectZ(ObjLoaderObject3D rotationObject, float angle)
         {
-            Vector3 oldPostion = rotationobject.Transformation.ExtractTranslation();
-            Matrix4 translationtoOrigin = Matrix4.CreateTranslation(-oldPostion);
+            Vector3 oldPosition = rotationObject.Transformation.ExtractTranslation();
+            Matrix4 translationToOrigin = Matrix4.CreateTranslation(-oldPosition);
             Matrix4 rotation = Matrix4.CreateRotationZ(angle);
-            Matrix4 translationBack = Matrix4.CreateTranslation(oldPostion);
-            Matrix4 combinedMatrix = translationtoOrigin * rotation * translationBack;
-            rotationobject.Transformation *= combinedMatrix;
+            Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
+            Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
+            rotationObject.Transformation *= combinedMatrix;
         }
         protected override void OnLoad()
         {
             base.OnLoad();
-
+            // Set the mouse cursor to be a crosshair
+            Cursor = MouseCursor.Crosshair;
+            
             // Initialize Camera
             Camera.Init();
             Camera.SetWidthHeightFov(1920, 1080, 60);
@@ -130,22 +138,30 @@ namespace Examples.Tutorial
             simpleTextureMaterial = new SimpleTextureMaterial();
             wobbleMaterial = new Wobble2Material();
             
-            // enebale z-buffer
+            // enable z-buffer
             GL.Enable(EnableCap.DepthTest);
 
             // backface culling enabled
             GL.Enable(EnableCap.CullFace);
-            GL.CullFace(CullFaceMode.Front);         
+            GL.CullFace(CullFaceMode.Front);
+
         }
  
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            // updateCounter simply increaes
+            // updateCounter simply increases
             updateTime += (float)e.Time;
-
-            CursorState cursorState = CursorState.Grabbed;
-            //https://opentk.net/learn/chapter1/9-camera.html?tabs=input-opentk4%2Cdelta-time-input-opentk4%2Ccursor-mode-opentk4%2Cmouse-move-opentk4%2Cscroll-opentk4 hier weiter machen bei "mouse input"
+            
+            //Move the camera according to mouse input
+            //Get the mouse input
+            var mouse = MouseState;
+            //Get the change in mouse position and rotate the camera accordingly
+            var deltaX = mouse.Delta.X;
+            var deltaY = mouse.Delta.Y;
+            Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
+            Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
+            //TODO Do we need this? perhaps let the cursor be freely movable and fixate the camera?
         }
 
 

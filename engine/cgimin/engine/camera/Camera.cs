@@ -50,7 +50,10 @@ namespace cgimin.engine.camera
         public static Matrix4 Transformation
         {
             get { return transformation; }
+            set { transformation = value; }
+            
         }
+
 
 
         public static Matrix4 PerspectiveProjection
