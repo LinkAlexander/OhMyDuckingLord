@@ -117,6 +117,7 @@ namespace Examples.Tutorial
         }
         protected override void OnLoad()
         {
+            
             base.OnLoad();
             // Set the mouse cursor to be a crosshair
             Cursor = MouseCursor.Crosshair;
@@ -152,7 +153,6 @@ namespace Examples.Tutorial
         {
             // updateCounter simply increases
             updateTime += (float)e.Time;
-            
             //Move the camera according to mouse input
             //Get the mouse input
             var mouse = MouseState;
@@ -162,6 +162,9 @@ namespace Examples.Tutorial
             Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
             Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
             //TODO Do we need this? perhaps let the cursor be freely movable and fixate the camera?
+            //TODO Picking Ray? Camera Transformation und Mouse Position nutzen um einen Ray zu erstellen, der dann mit dem Objekt geschnitten wird
+            //TODO https://www.youtube.com/watch?v=DLKN0jExRIM
+            
         }
 
 
