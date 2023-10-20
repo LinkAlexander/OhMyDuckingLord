@@ -139,7 +139,27 @@ namespace cgimin.engine.object3d
 
         }
 
-
+        //This function rotates the object around the x axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
+        public void RotateObjectX(float angle)
+        {
+            Vector3 oldPosition = this.Transformation.ExtractTranslation();
+            Matrix4 translationToOrigin = Matrix4.CreateTranslation(-oldPosition);
+            Matrix4 rotation = Matrix4.CreateRotationX(angle);
+            Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
+            Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
+            this.Transformation *= combinedMatrix;
+        }
+        //This function rotates the object around the Z axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
+        //TODO Auch für Y machen
+        public void RotateObjectZ(float angle)
+        {
+            Vector3 oldPosition = this.Transformation.ExtractTranslation();
+            Matrix4 translationToOrigin = Matrix4.CreateTranslation(-oldPosition);
+            Matrix4 rotation = Matrix4.CreateRotationZ(angle);
+            Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
+            Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
+            this.Transformation *= combinedMatrix;
+        }
 
 
 

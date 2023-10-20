@@ -58,63 +58,42 @@ namespace Examples.Tutorial
                     this.WindowState = WindowState.Fullscreen;       
             // Move the exampleObject forward when pressing the w key
             if(e.Key == Keys.W)
-                exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, 0.1f);
+                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, 0.1f);
+                
             // Move the exampleObject backward when pressing the s key
             if(e.Key == Keys.S)
-                exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -0.1f);
+                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -0.1f);
             //Move the exampleObject left when pressing the a key
             if(e.Key == Keys.A)
-                exampleObject.Transformation *= Matrix4.CreateTranslation(-0.1f, 0, 0);
+                Camera.Transformation *= Matrix4.CreateTranslation(-0.1f, 0, 0);
             //Move the exampleObject right when pressing the d key
             if(e.Key == Keys.D)
-                exampleObject.Transformation *= Matrix4.CreateTranslation(0.1f, 0, 0);
+                Camera.Transformation *= Matrix4.CreateTranslation(0.1f, 0, 0);
 
             //Press the n key to rotate the exampleObject around the z axis, indifferent to position
             if (e.Key == Keys.Left)
             {
-                RotateObjectZ(exampleObject, 0.1f);
+                exampleObject.RotateObjectZ(0.1f);
             }
             if (e.Key == Keys.Right)
             {
-                RotateObjectZ(exampleObject, -0.1f);
+                exampleObject.RotateObjectZ(-0.1f);
             }
             if (e.Key == Keys.Up)
             {
-                RotateObjectX(exampleObject, -0.1f);
+                exampleObject.RotateObjectX(-0.1f);
             }
             if (e.Key == Keys.Down)
             {
-                RotateObjectX(exampleObject, 0.1f);
+                exampleObject.RotateObjectX(0.1f);
             }
             //Press Backspace to reset the exampleObject to its original position
             if (e.Key == Keys.Backspace) 
             {
-                exampleObject.Transformation = Matrix4.CreateTranslation(0, 0, -5);
+                Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
             }
         }
-        //This function rotates the object around the x axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
-        //TODO zum Objekt moven
-        void RotateObjectX(ObjLoaderObject3D rotationObject, float angle)
-        {
-            Vector3 oldPosition = rotationObject.Transformation.ExtractTranslation();
-            Matrix4 translationToOrigin = Matrix4.CreateTranslation(-oldPosition);
-            Matrix4 rotation = Matrix4.CreateRotationX(angle);
-            Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
-            Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
-            rotationObject.Transformation *= combinedMatrix;
-        }
-        //This function rotates the object around the Z axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
-        //TODO zum Objekt moven
-        //TODO Auch für Y machen
-        void RotateObjectZ(ObjLoaderObject3D rotationObject, float angle)
-        {
-            Vector3 oldPosition = rotationObject.Transformation.ExtractTranslation();
-            Matrix4 translationToOrigin = Matrix4.CreateTranslation(-oldPosition);
-            Matrix4 rotation = Matrix4.CreateRotationZ(angle);
-            Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
-            Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
-            rotationObject.Transformation *= combinedMatrix;
-        }
+        
         protected override void OnLoad()
         {
             
