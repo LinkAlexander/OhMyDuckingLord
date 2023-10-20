@@ -104,7 +104,7 @@ namespace Examples.Tutorial
             
             //Lighting
             // todo fill with data for ambient, diffuse and specular light between 0 and 1
-            Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(0,1,0,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
+            Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,0,0,1), new Vector4(1,0,0,1), new Vector4(1,1,1,1));
             
             //todo make the duck react to the light somehow --> perhaps from the slides 
             
@@ -171,8 +171,8 @@ namespace Examples.Tutorial
 
             //simpleTextureMaterial.Draw(exampleObject, woodTexture);
             //wobbleMaterial.Draw(exampleObject, woodTexture, updateTime);
-            AmbientDiffuseMaterial ambientDiffuseMaterial = new AmbientDiffuseMaterial();
-            ambientDiffuseMaterial.Draw(exampleObject, woodTexture);
+            AmbientDiffuseSpecularMaterial ambientDiffuseMaterial = new AmbientDiffuseSpecularMaterial();
+            ambientDiffuseMaterial.Draw(exampleObject, woodTexture,5);
             SwapBuffers();
         }
 
