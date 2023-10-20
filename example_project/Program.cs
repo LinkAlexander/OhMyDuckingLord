@@ -14,6 +14,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Runtime.InteropServices;
+using cgimin.engine.material.ambientdiffuse;
 using OpenTK.Windowing.Common.Input;
 
 #endregion --- Using Directives ---
@@ -101,6 +102,12 @@ namespace Examples.Tutorial
             // Set the mouse cursor to be a crosshair
             Cursor = MouseCursor.Crosshair;
             
+            //Lighting
+            // todo fill with data for ambient, diffuse and specular light between 0 and 1
+            Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(0,1,0,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
+            
+            //todo make the duck react to the light somehow --> perhaps from the slides 
+            
             // Initialize Camera
             Camera.Init();
             Camera.SetWidthHeightFov(1920, 1080, 60);
@@ -144,6 +151,7 @@ namespace Examples.Tutorial
             //TODO Picking Ray? Camera Transformation und Mouse Position nutzen um einen Ray zu erstellen, der dann mit dem Objekt geschnitten wird
             //TODO https://www.youtube.com/watch?v=DLKN0jExRIM
             
+            
         }
 
 
@@ -161,9 +169,10 @@ namespace Examples.Tutorial
             //exampleObject.Transformation *= Matrix4.CreateRotationZ(updateTime);
             //exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -1);
 
-            simpleTextureMaterial.Draw(exampleObject, woodTexture);
+            //simpleTextureMaterial.Draw(exampleObject, woodTexture);
             //wobbleMaterial.Draw(exampleObject, woodTexture, updateTime);
-
+            AmbientDiffuseMaterial ambientDiffuseMaterial = new AmbientDiffuseMaterial();
+            ambientDiffuseMaterial.Draw(exampleObject, woodTexture);
             SwapBuffers();
         }
 
