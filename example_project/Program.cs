@@ -60,35 +60,18 @@ namespace Examples.Tutorial
                     this.WindowState = WindowState.Fullscreen;       
             // Move the exampleObject forward when pressing the w key
             if(e.Key == Keys.W)
-                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, 0.1f);
+                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, 1f);
                 
             // Move the exampleObject backward when pressing the s key
             if(e.Key == Keys.S)
-                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -0.1f);
+                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -1f);
             //Move the exampleObject left when pressing the a key
             if(e.Key == Keys.A)
-                Camera.Transformation *= Matrix4.CreateTranslation(-0.1f, 0, 0);
+                Camera.Transformation *= Matrix4.CreateTranslation(1f, 0, 0);
             //Move the exampleObject right when pressing the d key
             if(e.Key == Keys.D)
-                Camera.Transformation *= Matrix4.CreateTranslation(0.1f, 0, 0);
-
-            //Press the n key to rotate the exampleObject around the z axis, indifferent to position
-            if (e.Key == Keys.Left)
-            {
-                exampleObject.RotateObjectZ(0.1f);
-            }
-            if (e.Key == Keys.Right)
-            {
-                exampleObject.RotateObjectZ(-0.1f);
-            }
-            if (e.Key == Keys.Up)
-            {
-                exampleObject.RotateObjectX(-0.1f);
-            }
-            if (e.Key == Keys.Down)
-            {
-                exampleObject.RotateObjectX(0.1f);
-            }
+                Camera.Transformation *= Matrix4.CreateTranslation(-1f, 0, 0);
+            
             //Press Backspace to reset the exampleObject to its original position
             if (e.Key == Keys.Backspace) 
             {
@@ -101,11 +84,11 @@ namespace Examples.Tutorial
             
             base.OnLoad();
             // Set the mouse cursor to be a crosshair
-            //Cursor = MouseCursor.Crosshair;
+            Cursor = MouseCursor.Crosshair;
             
             //Lighting
             // todo fill with data for ambient, diffuse and specular light between 0 and 1
-            Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,0,0,1), new Vector4(1,0,0,1), new Vector4(1,1,1,1));
+            Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
             
             //todo make the duck react to the light somehow --> perhaps from the slides 
             
@@ -115,7 +98,7 @@ namespace Examples.Tutorial
 
             // Loading the object
             exampleObject = new ObjLoaderObject3D("data/objects/duck_smooth.obj");
-            street = new ObjLoaderObject3D("data/objects/streetv2.obj");
+            street = new ObjLoaderObject3D("data/objects/streetv1.obj");
             //Once the Object is loaded, put it in front of the camera
             exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -5);
             street.Transformation *= Matrix4.CreateTranslation(0, 0, -50);

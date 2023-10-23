@@ -130,7 +130,8 @@ namespace cgimin.engine.object3d
             Indices.Add(index + 2);
             Indices.Add(index + 1);
         }
-
+        
+        
 
         // unloads from graphics memory
         public void UnLoad()
