@@ -27,7 +27,8 @@ namespace Examples.Tutorial
         
         // the 3D-Object we load
         private ObjLoaderObject3D exampleObject;
-
+        private ObjLoaderObject3D street;
+        
         // our texture-IDs
         private int woodTexture;
         
@@ -100,7 +101,7 @@ namespace Examples.Tutorial
             
             base.OnLoad();
             // Set the mouse cursor to be a crosshair
-            Cursor = MouseCursor.Crosshair;
+            //Cursor = MouseCursor.Crosshair;
             
             //Lighting
             // todo fill with data for ambient, diffuse and specular light between 0 and 1
@@ -114,9 +115,10 @@ namespace Examples.Tutorial
 
             // Loading the object
             exampleObject = new ObjLoaderObject3D("data/objects/duck_smooth.obj");
-            
+            street = new ObjLoaderObject3D("data/objects/streetv2.obj");
             //Once the Object is loaded, put it in front of the camera
             exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -5);
+            street.Transformation *= Matrix4.CreateTranslation(0, 0, -50);
 
             // Loading the texture
             woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
@@ -173,6 +175,7 @@ namespace Examples.Tutorial
             //wobbleMaterial.Draw(exampleObject, woodTexture, updateTime);
             AmbientDiffuseSpecularMaterial ambientDiffuseMaterial = new AmbientDiffuseSpecularMaterial();
             ambientDiffuseMaterial.Draw(exampleObject, woodTexture,5);
+            ambientDiffuseMaterial.Draw(street, woodTexture,5);
             SwapBuffers();
         }
 
@@ -180,6 +183,7 @@ namespace Examples.Tutorial
         protected override void OnUnload()
         {
             exampleObject.UnLoad();
+            street.UnLoad();
         }
 
 
