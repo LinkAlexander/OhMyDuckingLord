@@ -2,6 +2,7 @@
 
 #region --- Using Directives ---
 
+using System.Drawing.Drawing2D;
 using OpenTK.Graphics.OpenGL;
 using cgimin.engine.object3d;
 using cgimin.engine.texture;
@@ -24,6 +25,8 @@ namespace Examples.Tutorial
 
     public class ExampleProject : GameWindow
     {
+
+        private float cameraSpeed = 0.1f;
         
         // the 3D-Object we load
         private ObjLoaderObject3D exampleObject;
@@ -31,11 +34,11 @@ namespace Examples.Tutorial
         
         // our texture-IDs
         private int woodTexture;
-        
+        private int cellshading;
         // Materials
         private SimpleTextureMaterial simpleTextureMaterial;
         private Wobble2Material wobbleMaterial;
-
+        
 
         // Updating the time
         private float updateTime = 0;
@@ -58,25 +61,15 @@ namespace Examples.Tutorial
                     this.WindowState = WindowState.Normal;
                 else
                     this.WindowState = WindowState.Fullscreen;       
-            // Move the exampleObject forward when pressing the w key
-            if(e.Key == Keys.W)
-                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, 1f);
-                
-            // Move the exampleObject backward when pressing the s key
-            if(e.Key == Keys.S)
-                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -1f);
-            //Move the exampleObject left when pressing the a key
-            if(e.Key == Keys.A)
-                Camera.Transformation *= Matrix4.CreateTranslation(1f, 0, 0);
-            //Move the exampleObject right when pressing the d key
-            if(e.Key == Keys.D)
-                Camera.Transformation *= Matrix4.CreateTranslation(-1f, 0, 0);
+
             
             //Press Backspace to reset the exampleObject to its original position
             if (e.Key == Keys.Backspace) 
             {
                 Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
             }
+            
+            
         }
         
         protected override void OnLoad()
@@ -101,11 +94,12 @@ namespace Examples.Tutorial
             street = new ObjLoaderObject3D("data/objects/streetv1.obj");
             //Once the Object is loaded, put it in front of the camera
             exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -5);
-            street.Transformation *= Matrix4.CreateTranslation(0, 0, -50);
+            street.Transformation *= Matrix4.CreateTranslation(0, -3, -5);
+            
 
             // Loading the texture
             woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
-
+            cellshading = TextureManager.LoadTexture("data/textures/cellshading.png");
             // initialize materials
             simpleTextureMaterial = new SimpleTextureMaterial();
             wobbleMaterial = new Wobble2Material();
@@ -123,20 +117,41 @@ namespace Examples.Tutorial
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             // updateCounter simply increases
-            updateTime += (float)e.Time;
+            //updateTime += (float)e.Time;
             //Move the camera according to mouse input
             //Get the mouse input
-            var mouse = MouseState;
+            //var mouse = MouseState;
             //Get the change in mouse position and rotate the camera accordingly
-            var deltaX = mouse.Delta.X;
-            var deltaY = mouse.Delta.Y;
-            Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
-            Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
+            //var deltaX = mouse.Delta.X;
+            //var deltaY = mouse.Delta.Y;
+            //Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
+            //Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
+            
             //TODO Do we need this? perhaps let the cursor be freely movable and fixate the camera?
             //TODO Picking Ray? Camera Transformation und Mouse Position nutzen um einen Ray zu erstellen, der dann mit dem Objekt geschnitten wird
             //TODO https://www.youtube.com/watch?v=DLKN0jExRIM
             
+            //Movement of the camera according to the keys pressed, only when within the boundaries
+            if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < 10)
+                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, cameraSpeed);
+            if (KeyboardState.IsKeyDown(Keys.S) && Camera.Transformation.ExtractTranslation().Z > -10)
+                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -cameraSpeed);
+            if (KeyboardState.IsKeyDown(Keys.A)&& Camera.Transformation.ExtractTranslation().X < 10)
+                Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
+            if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -10)
+                Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);
+            if (KeyboardState.IsKeyDown(Keys.Space)&& Camera.Transformation.ExtractTranslation().Y > -10)
+                Camera.Transformation *= Matrix4.CreateTranslation(0, -cameraSpeed, 0);
+            if (KeyboardState.IsKeyDown(Keys.LeftControl) && Camera.Transformation.ExtractTranslation().Y < 0)
+                Camera.Transformation *= Matrix4.CreateTranslation(0, cameraSpeed, 0);
             
+            
+            //Press Backspace to reset the exampleObject to its original position
+            if (KeyboardState.IsKeyDown(Keys.Backspace))
+                Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
+            // Camera speed up
+            if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.2f;
+            if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.1f;
         }
 
 
@@ -158,7 +173,7 @@ namespace Examples.Tutorial
             //wobbleMaterial.Draw(exampleObject, woodTexture, updateTime);
             AmbientDiffuseSpecularMaterial ambientDiffuseMaterial = new AmbientDiffuseSpecularMaterial();
             ambientDiffuseMaterial.Draw(exampleObject, woodTexture,5);
-            ambientDiffuseMaterial.Draw(street, woodTexture,5);
+            ambientDiffuseMaterial.Draw(street, cellshading,5);
             SwapBuffers();
         }
 
