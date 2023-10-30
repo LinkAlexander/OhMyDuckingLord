@@ -38,7 +38,7 @@ namespace cgimin.engine.camera
             position = eye;
             transformation = Matrix4.LookAt(eye, target, up);
         }
-
+        
 
         // Getter
         public static Vector3 Position

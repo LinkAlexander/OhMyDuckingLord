@@ -2,7 +2,9 @@
 
 #region --- Using Directives ---
 
+using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Numerics;
 using OpenTK.Graphics.OpenGL;
 using cgimin.engine.object3d;
 using cgimin.engine.texture;
@@ -17,6 +19,8 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Runtime.InteropServices;
 using cgimin.engine.material.ambientdiffuse;
 using OpenTK.Windowing.Common.Input;
+using Vector3 = OpenTK.Mathematics.Vector3;
+using Vector4 = OpenTK.Mathematics.Vector4;
 
 #endregion --- Using Directives ---
 
@@ -112,24 +116,39 @@ namespace Examples.Tutorial
             GL.CullFace(CullFaceMode.Front);
 
         }
- 
+        //TODO https://www.youtube.com/watch?v=DLKN0jExRIM
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            Matrix4 viewMatrix = Camera.Transformation;
+            Matrix4 projectionMatrix = Camera.PerspectiveProjection;
+            float mouseX = MousePosition.X;
+            float mouseY = MousePosition.Y;
+            
+            //get the near and far points of the ray
+            Vector3 nearPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, 0.0f), mouseX, mouseY, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix);
+            Vector3 farPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, 1.0f), mouseX, mouseY, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix);
+            Vector3 rayDirection = farPoint - nearPoint;
+            rayDirection.Normalize();
+            Console.WriteLine(rayDirection);
+            //TODO check if this is right
+            //TODO check for intersection
+            //TODO draw the ray
+            
+            
+        }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             // updateCounter simply increases
-            //updateTime += (float)e.Time;
+            updateTime += (float)e.Time;
             //Move the camera according to mouse input
-            //Get the mouse input
-            //var mouse = MouseState;
             //Get the change in mouse position and rotate the camera accordingly
-            //var deltaX = mouse.Delta.X;
-            //var deltaY = mouse.Delta.Y;
-            //Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
-            //Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
-            
+            var deltaX = MouseState.Delta.X;
+            var deltaY = MouseState.Delta.Y;
+            Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
+            Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
             //TODO Do we need this? perhaps let the cursor be freely movable and fixate the camera?
-            //TODO Picking Ray? Camera Transformation und Mouse Position nutzen um einen Ray zu erstellen, der dann mit dem Objekt geschnitten wird
-            //TODO https://www.youtube.com/watch?v=DLKN0jExRIM
+
             
             //Movement of the camera according to the keys pressed, only when within the boundaries
             if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < 10)
