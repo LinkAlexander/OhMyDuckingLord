@@ -3,8 +3,6 @@
 #region --- Using Directives ---
 
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Numerics;
 using OpenTK.Graphics.OpenGL;
 using cgimin.engine.object3d;
 using cgimin.engine.texture;
@@ -16,7 +14,6 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Runtime.InteropServices;
 using cgimin.engine.material.ambientdiffuse;
 using OpenTK.Windowing.Common.Input;
 using Vector3 = OpenTK.Mathematics.Vector3;
@@ -24,7 +21,7 @@ using Vector4 = OpenTK.Mathematics.Vector4;
 
 #endregion --- Using Directives ---
 
-namespace Examples.Tutorial
+namespace cgi
 {
 
     public class ExampleProject : GameWindow
@@ -33,8 +30,8 @@ namespace Examples.Tutorial
         private float cameraSpeed = 0.1f;
         
         // the 3D-Object we load
-        private ObjLoaderObject3D exampleObject;
-        private ObjLoaderObject3D street;
+        private List<ObjLoaderObject3D> ducks;
+        private ObjLoaderObject3D street = null!;
         
         // our texture-IDs
         private int woodTexture;
@@ -45,32 +42,41 @@ namespace Examples.Tutorial
         
 
         // Updating the time
-        private float updateTime = 0;
+        private float updateTime;
 
         public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings, 
             NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings) {
             Size = (width, height);
-            this.KeyDown += KeyboardKeyDown;
+            KeyDown += KeyboardKeyDown;
+            // initialize materials
+            simpleTextureMaterial = new SimpleTextureMaterial();
+            wobbleMaterial = new Wobble2Material();
+            ducks = new List<ObjLoaderObject3D>();
         }
 
 
         void KeyboardKeyDown(KeyboardKeyEventArgs e)
         {
             if (e.Key == Keys.Escape)
-                this.Close();
+                Close();
 
             if (e.Key == Keys.F11)
-                if (this.WindowState == WindowState.Fullscreen)
-                    this.WindowState = WindowState.Normal;
+                if (WindowState == WindowState.Fullscreen)
+                    WindowState = WindowState.Normal;
                 else
-                    this.WindowState = WindowState.Fullscreen;       
+                    WindowState = WindowState.Fullscreen;       
 
             
             //Press Backspace to reset the exampleObject to its original position
             if (e.Key == Keys.Backspace) 
             {
                 Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
+            }
+
+            if (e.Key == Keys.Up)
+            {
+                Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(90));
             }
             
             
@@ -82,31 +88,32 @@ namespace Examples.Tutorial
             base.OnLoad();
             // Set the mouse cursor to be a crosshair
             Cursor = MouseCursor.Crosshair;
-            
+            updateTime = 0;
             //Lighting
-            // todo fill with data for ambient, diffuse and specular light between 0 and 1
             Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
-            
-            //todo make the duck react to the light somehow --> perhaps from the slides 
             
             // Initialize Camera
             Camera.Init();
             Camera.SetWidthHeightFov(1920, 1080, 60);
-
+            
             // Loading the object
-            exampleObject = new ObjLoaderObject3D("data/objects/duck_smooth.obj");
+            ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
+            ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
+            ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
             street = new ObjLoaderObject3D("data/objects/streetv1.obj");
             //Once the Object is loaded, put it in front of the camera
-            exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -5);
+            int count = 0; 
+            foreach (var duck in ducks)
+            {
+                duck.Transformation *= Matrix4.CreateTranslation(count * 5, 0, -5);
+                count++;
+            }
             street.Transformation *= Matrix4.CreateTranslation(0, -3, -5);
             
-
             // Loading the texture
             woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
             cellshading = TextureManager.LoadTexture("data/textures/cellshading.png");
-            // initialize materials
-            simpleTextureMaterial = new SimpleTextureMaterial();
-            wobbleMaterial = new Wobble2Material();
+
             
             // enable z-buffer
             GL.Enable(EnableCap.DepthTest);
@@ -120,21 +127,23 @@ namespace Examples.Tutorial
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             Matrix4 viewMatrix = Camera.Transformation;
-            Matrix4 projectionMatrix = Camera.PerspectiveProjection;
             float mouseX = MousePosition.X;
             float mouseY = MousePosition.Y;
-            
+            Vector3 nearPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, 0.0f), 0, 0, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix.Inverted());
+            Vector3 farPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, -1.0f), 0, 0, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix.Inverted());
             //get the near and far points of the ray
-            Vector3 nearPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, 0.0f), mouseX, mouseY, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix);
-            Vector3 farPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, 1.0f), mouseX, mouseY, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix);
-            Vector3 rayDirection = farPoint - nearPoint;
-            rayDirection.Normalize();
-            Console.WriteLine(rayDirection);
-            //TODO check if this is right
-            //TODO check for intersection
-            //TODO draw the ray
-            
-            
+            PickingRay pickingRay = new PickingRay(nearPoint, farPoint);
+            PickingRay pickingRayWorld =
+                new PickingRay(Vector3.Transform(pickingRay.Origin, viewMatrix.Inverted().ExtractRotation()), Vector3.TransformNormal(pickingRay.Direction, viewMatrix.Inverted()));
+            Console.WriteLine(pickingRayWorld);
+            //TODO Wahrscheinlich ist der Ray nur in den Kamerakoordinaten. also muss der erst in Weltkoordinaten umgerechnet werden
+            foreach (var duck in ducks)
+            {
+                if (duck.RayIntersectsObject(pickingRayWorld))
+                {
+                    Console.WriteLine("HIT");
+                }
+            }
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
@@ -143,10 +152,10 @@ namespace Examples.Tutorial
             updateTime += (float)e.Time;
             //Move the camera according to mouse input
             //Get the change in mouse position and rotate the camera accordingly
-            var deltaX = MouseState.Delta.X;
-            var deltaY = MouseState.Delta.Y;
-            Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
-            Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
+            //var deltaX = MouseState.Delta.X;
+            //var deltaY = MouseState.Delta.Y;
+            //Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
+            //Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
             //TODO Do we need this? perhaps let the cursor be freely movable and fixate the camera?
 
             
@@ -181,17 +190,13 @@ namespace Examples.Tutorial
 
             // the screen color and the depth-buffer are cleared
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            //exampleObject.Transformation = Matrix4.Identity;
-            //exampleObject.Transformation *= Matrix4.CreateRotationX(updateTime);
-            //exampleObject.Transformation *= Matrix4.CreateRotationY(updateTime);
-            //exampleObject.Transformation *= Matrix4.CreateRotationZ(updateTime);
-            //exampleObject.Transformation *= Matrix4.CreateTranslation(0, 0, -1);
-
-            //simpleTextureMaterial.Draw(exampleObject, woodTexture);
-            //wobbleMaterial.Draw(exampleObject, woodTexture, updateTime);
+            
             AmbientDiffuseSpecularMaterial ambientDiffuseMaterial = new AmbientDiffuseSpecularMaterial();
-            ambientDiffuseMaterial.Draw(exampleObject, woodTexture,5);
+            foreach (var duck in ducks)
+            {
+                ambientDiffuseMaterial.Draw(duck, woodTexture,5);
+            }
+            
             ambientDiffuseMaterial.Draw(street, cellshading,5);
             SwapBuffers();
         }
@@ -199,7 +204,11 @@ namespace Examples.Tutorial
 
         protected override void OnUnload()
         {
-            exampleObject.UnLoad();
+            foreach (var duck in ducks)
+            {
+                duck.UnLoad();
+            }
+
             street.UnLoad();
         }
 

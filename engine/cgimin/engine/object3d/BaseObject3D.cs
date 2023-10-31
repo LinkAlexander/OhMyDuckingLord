@@ -130,9 +130,45 @@ namespace cgimin.engine.object3d
             Indices.Add(index + 2);
             Indices.Add(index + 1);
         }
-        
-        
 
+        public bool RayIntersectsObject(PickingRay pickingRay)
+        {
+            Matrix4 inverseviewMatrix = Transformation.Inverted();
+            //TODO Das testen
+            Vector3 rayOriginObjectSpace = Vector3.Transform(pickingRay.Origin, inverseviewMatrix.ExtractRotation());
+            Vector3 rayDirectionObjectSpace = Vector3.TransformNormal(pickingRay.Direction, inverseviewMatrix);
+            for (int i = 0; i < Positions.Count; i += 3)
+            {
+                Vector3 vertex1 = Positions[i];
+                Vector3 vertex2 = Positions[i + 1];
+                Vector3 vertex3 = Positions[i + 2];
+                Vector3 triangleNormal = Vector3.Cross(vertex2 - vertex1, vertex3 - vertex1);
+                Vector3 planePoint = vertex1;
+                float denominator = Vector3.Dot(triangleNormal, rayDirectionObjectSpace);
+                if (Math.Abs(denominator) < float.Epsilon)
+                    continue; // Keine Kollision, der Ray ist parallel zur Ebene.
+                float t = -Vector3.Dot(rayOriginObjectSpace - planePoint, triangleNormal) / denominator;
+                if (t >= 0) {
+                    // Der Ray trifft die Ebene. 
+                    if (IsPointInTriangle(rayOriginObjectSpace + t * rayDirectionObjectSpace, vertex1, vertex2, vertex3))  
+                        return true; // Der Ray kollidiert mit diesem Objekt.
+                }
+            }
+
+            return false; // Keine Kollision mit diesem Objekt.
+        }
+
+        bool IsPointInTriangle(Vector3 point, Vector3 v1, Vector3 v2, Vector3 v3) {
+            // Berechne die Baryzentrischen Koordinaten
+            float detT = (v2.Y - v3.Y) * (v1.X - v3.X) + (v3.X - v2.X) * (v1.Y - v3.Y);
+            float alpha = ((v2.Y - v3.Y) * (point.X - v3.X) + (v3.X - v2.X) * (point.Y - v3.Y)) / detT;
+            float beta = ((v3.Y - v1.Y) * (point.X - v3.X) + (v1.X - v3.X) * (point.Y - v3.Y)) / detT;
+            float gamma = 1.0f - alpha - beta;
+
+            // Überprüfe, ob die Baryzentrischen Koordinaten im gültigen Bereich liegen (alle Werte zwischen 0 und 1).
+            return alpha >= 0 && beta >= 0 && gamma >= 0;
+        }
+        
         // unloads from graphics memory
         public void UnLoad()
         {
