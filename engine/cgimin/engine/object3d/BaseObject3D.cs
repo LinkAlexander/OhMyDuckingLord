@@ -135,7 +135,6 @@ namespace cgimin.engine.object3d
         {
             //Ray minus Transformation
             pickingRay = new PickingRay(pickingRay.Origin - Transformation.ExtractTranslation(), pickingRay.Destination - Transformation.ExtractTranslation());
-            Console.WriteLine("Neuer ray:" + pickingRay);
             for (int i = 0; i < Positions.Count; i += 3)
             {
                 Vector3 vertex1 = Positions[i];
@@ -143,7 +142,7 @@ namespace cgimin.engine.object3d
                 Vector3 vertex3 = Positions[i + 2];
                 Vector3 triangleNormal = Vector3.Cross(vertex2 - vertex1, vertex3 - vertex1);
                 Vector3 planePoint = vertex1;
-                float denominator = Vector3.Dot(triangleNormal, pickingRay.Direction);
+                float denominator = Vector3.Dot(triangleNormal, pickingRay.Direction); // Winkel zwischen Normalen und picking ray
                 if (Math.Abs(denominator) < float.Epsilon)
                     continue; // Keine Kollision, der Ray ist parallel zur Ebene.
                 float t = -Vector3.Dot(pickingRay.Origin - planePoint, triangleNormal) / denominator;

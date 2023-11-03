@@ -47,7 +47,7 @@ namespace cgimin.engine.object3d
                         }
                         catch (IndexOutOfRangeException)
                         {
-
+                            Console.WriteLine("IndexOutOfRangeException Error: ObjLoaderObject3D only supports triangles!"); //TODO: Add support for quads or fix the object
                         }
                         
                     }

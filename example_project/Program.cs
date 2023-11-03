@@ -3,6 +3,7 @@
 #region --- Using Directives ---
 
 using System.Drawing;
+using System.Numerics;
 using OpenTK.Graphics.OpenGL;
 using cgimin.engine.object3d;
 using cgimin.engine.texture;
@@ -32,6 +33,9 @@ namespace cgi
         // the 3D-Object we load
         private List<ObjLoaderObject3D> ducks;
         private ObjLoaderObject3D street = null!;
+
+        //private ObjLoaderObject3D torusstart;
+        private ObjLoaderObject3D torusend;
         
         // our texture-IDs
         private int woodTexture;
@@ -91,8 +95,6 @@ namespace cgi
         {
             
             base.OnLoad();
-            // Set the mouse cursor to be a crosshair
-            Cursor = MouseCursor.Crosshair;
             updateTime = 0;
             //Lighting
             Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
@@ -105,15 +107,17 @@ namespace cgi
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
-            street = new ObjLoaderObject3D("data/objects/streetv1.obj");
+            street = new ObjLoaderObject3D("data/objects/simpleStreet.obj");
             //Once the Object is loaded, put it in front of the camera
             int count = 0; 
+            street.Transformation *= Matrix4.CreateTranslation(10, -5, -10);
             foreach (var duck in ducks)
             {
                 duck.Transformation *= Matrix4.CreateTranslation(count * 5, 0, -5);
                 count++;
             }
-            street.Transformation *= Matrix4.CreateTranslation(0, -3, -5);
+            //torusstart = new ObjLoaderObject3D("data/objects/cube.obj");
+            torusend = new ObjLoaderObject3D("data/objects/cube.obj");
             
             // Loading the texture
             woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
@@ -128,20 +132,23 @@ namespace cgi
             GL.CullFace(CullFaceMode.Front);
 
         }
-        //TODO https://www.youtube.com/watch?v=DLKN0jExRIM
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            Matrix4 viewMatrix = Camera.Transformation;
             float mouseX = MousePosition.X;
             float mouseY = MousePosition.Y;
             
+            Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
+            //torusstart.Transformation = Matrix4.CreateTranslation(nearPoint);
             
-            Vector3 nearPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, Camera.Transformation.ExtractTranslation().Z), 0, 0, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix.Inverted());
-            Vector3 farPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, Camera.Transformation.ExtractTranslation().Z-1), 0, 0, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix.Inverted());
-            //get the near and far points of the ray
-            pickingRay = new PickingRay(nearPoint - Camera.Transformation.ExtractTranslation(), farPoint - Camera.Transformation.ExtractTranslation());
-            Console.WriteLine(pickingRay);
-            //TODO Wahrscheinlich ist der Ray nur in den Kamerakoordinaten. also muss der erst in Weltkoordinaten umgerechnet werden
+            
+            Vector3 farPoint =
+                Vector3.Unproject(new Vector3(mouseX, mouseY, Camera.Transformation.Inverted().ExtractTranslation().Z), 0, 0,
+                    Size.X, Size.Y, 0.01f, 1000f, Camera.Transformation.Inverted());
+            torusend.Transformation = Matrix4.CreateTranslation(farPoint);
+            torusend.Transformation *= Matrix4.CreateScale(0.005f);
+            pickingRay = new PickingRay(nearPoint /*- Camera.Transformation.ExtractTranslation()*/, farPoint /* - Camera.Transformation.ExtractTranslation()*/);
+            
+            
             foreach (var duck in ducks)
             {
                 if (duck.RayIntersectsObject(pickingRay))
@@ -163,17 +170,17 @@ namespace cgi
             //Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
             //TODO Do we need this? perhaps let the cursor be freely movable and fixate the camera?
 
-            
+            int bound = 10;
             //Movement of the camera according to the keys pressed, only when within the boundaries
-            if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < 10)
+            if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
                 Camera.Transformation *= Matrix4.CreateTranslation(0, 0, cameraSpeed);
-            if (KeyboardState.IsKeyDown(Keys.S) && Camera.Transformation.ExtractTranslation().Z > -10)
+            if (KeyboardState.IsKeyDown(Keys.S) && Camera.Transformation.ExtractTranslation().Z > -bound)
                 Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -cameraSpeed);
-            if (KeyboardState.IsKeyDown(Keys.A)&& Camera.Transformation.ExtractTranslation().X < 10)
+            if (KeyboardState.IsKeyDown(Keys.A)&& Camera.Transformation.ExtractTranslation().X < bound)
                 Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
-            if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -10)
+            if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -bound)
                 Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);
-            if (KeyboardState.IsKeyDown(Keys.Space)&& Camera.Transformation.ExtractTranslation().Y > -10)
+            if (KeyboardState.IsKeyDown(Keys.Space)&& Camera.Transformation.ExtractTranslation().Y > -bound)
                 Camera.Transformation *= Matrix4.CreateTranslation(0, -cameraSpeed, 0);
             if (KeyboardState.IsKeyDown(Keys.LeftControl) && Camera.Transformation.ExtractTranslation().Y < 0)
                 Camera.Transformation *= Matrix4.CreateTranslation(0, cameraSpeed, 0);
@@ -198,11 +205,23 @@ namespace cgi
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             
             AmbientDiffuseSpecularMaterial ambientDiffuseMaterial = new AmbientDiffuseSpecularMaterial();
+            ambientDiffuseMaterial.Draw(street, cellshading,5);
             foreach (var duck in ducks)
             {
                 ambientDiffuseMaterial.Draw(duck, woodTexture,5);
             }
-            ambientDiffuseMaterial.Draw(street, cellshading,5);
+            
+            /*if (torusstart != null)
+            {
+                ambientDiffuseMaterial.Draw(torusstart,cellshading, 5);
+            }*/
+
+            if (torusend != null)
+            {
+                ambientDiffuseMaterial.Draw(torusend,cellshading, 5);  
+            }
+            
+            
             SwapBuffers();
         }
 
