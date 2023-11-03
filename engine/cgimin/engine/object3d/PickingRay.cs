@@ -12,7 +12,7 @@ public class PickingRay
         {
             this.origin = origin;
             this.destination = destination;
-            direction = (destination - origin).Normalized();
+            direction = (destination - this.origin).Normalized();
         }
     
         public Vector3 Origin
@@ -35,7 +35,7 @@ public class PickingRay
     
         public override string ToString()
         {
-            return "Origin: " + origin + ", Direction: " + direction;
+            return "Origin: " + origin + ", Destination: " + destination + ", Direction: " + direction;
         }
         public static PickingRay operator *(PickingRay ray, float scalar) {
             return new PickingRay(ray.Origin * scalar, ray.Direction * scalar);

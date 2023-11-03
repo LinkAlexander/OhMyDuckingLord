@@ -39,7 +39,8 @@ namespace cgi
         // Materials
         private SimpleTextureMaterial simpleTextureMaterial;
         private Wobble2Material wobbleMaterial;
-        
+
+        private PickingRay pickingRay;
 
         // Updating the time
         private float updateTime;
@@ -77,6 +78,10 @@ namespace cgi
             if (e.Key == Keys.Up)
             {
                 Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(90));
+            }
+            if (e.Key == Keys.Right)
+            {
+                Camera.Transformation *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(90));
             }
             
             
@@ -129,19 +134,19 @@ namespace cgi
             Matrix4 viewMatrix = Camera.Transformation;
             float mouseX = MousePosition.X;
             float mouseY = MousePosition.Y;
-            Vector3 nearPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, 0.0f), 0, 0, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix.Inverted());
-            Vector3 farPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, -1.0f), 0, 0, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix.Inverted());
+            
+            
+            Vector3 nearPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, Camera.Transformation.ExtractTranslation().Z), 0, 0, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix.Inverted());
+            Vector3 farPoint = Vector3.Unproject(new Vector3(mouseX, mouseY, Camera.Transformation.ExtractTranslation().Z-1), 0, 0, Size.X , Size.Y, 0.0f, 1.0f, viewMatrix.Inverted());
             //get the near and far points of the ray
-            PickingRay pickingRay = new PickingRay(nearPoint, farPoint);
-            PickingRay pickingRayWorld =
-                new PickingRay(Vector3.Transform(pickingRay.Origin, viewMatrix.Inverted().ExtractRotation()), Vector3.TransformNormal(pickingRay.Direction, viewMatrix.Inverted()));
-            Console.WriteLine(pickingRayWorld);
+            pickingRay = new PickingRay(nearPoint - Camera.Transformation.ExtractTranslation(), farPoint - Camera.Transformation.ExtractTranslation());
+            Console.WriteLine(pickingRay);
             //TODO Wahrscheinlich ist der Ray nur in den Kamerakoordinaten. also muss der erst in Weltkoordinaten umgerechnet werden
             foreach (var duck in ducks)
             {
-                if (duck.RayIntersectsObject(pickingRayWorld))
+                if (duck.RayIntersectsObject(pickingRay))
                 {
-                    Console.WriteLine("HIT");
+                    duck.RotateObjectX(MathHelper.DegreesToRadians(90));
                 }
             }
         }
@@ -180,6 +185,7 @@ namespace cgi
             // Camera speed up
             if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.2f;
             if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.1f;
+            
         }
 
 
@@ -196,7 +202,6 @@ namespace cgi
             {
                 ambientDiffuseMaterial.Draw(duck, woodTexture,5);
             }
-            
             ambientDiffuseMaterial.Draw(street, cellshading,5);
             SwapBuffers();
         }

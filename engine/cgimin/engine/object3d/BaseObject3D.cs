@@ -133,10 +133,9 @@ namespace cgimin.engine.object3d
 
         public bool RayIntersectsObject(PickingRay pickingRay)
         {
-            Matrix4 inverseviewMatrix = Transformation.Inverted();
-            //TODO Das testen
-            Vector3 rayOriginObjectSpace = Vector3.Transform(pickingRay.Origin, inverseviewMatrix.ExtractRotation());
-            Vector3 rayDirectionObjectSpace = Vector3.TransformNormal(pickingRay.Direction, inverseviewMatrix);
+            //Ray minus Transformation
+            pickingRay = new PickingRay(pickingRay.Origin - Transformation.ExtractTranslation(), pickingRay.Destination - Transformation.ExtractTranslation());
+            Console.WriteLine("Neuer ray:" + pickingRay);
             for (int i = 0; i < Positions.Count; i += 3)
             {
                 Vector3 vertex1 = Positions[i];
@@ -144,13 +143,13 @@ namespace cgimin.engine.object3d
                 Vector3 vertex3 = Positions[i + 2];
                 Vector3 triangleNormal = Vector3.Cross(vertex2 - vertex1, vertex3 - vertex1);
                 Vector3 planePoint = vertex1;
-                float denominator = Vector3.Dot(triangleNormal, rayDirectionObjectSpace);
+                float denominator = Vector3.Dot(triangleNormal, pickingRay.Direction);
                 if (Math.Abs(denominator) < float.Epsilon)
                     continue; // Keine Kollision, der Ray ist parallel zur Ebene.
-                float t = -Vector3.Dot(rayOriginObjectSpace - planePoint, triangleNormal) / denominator;
+                float t = -Vector3.Dot(pickingRay.Origin - planePoint, triangleNormal) / denominator;
                 if (t >= 0) {
                     // Der Ray trifft die Ebene. 
-                    if (IsPointInTriangle(rayOriginObjectSpace + t * rayDirectionObjectSpace, vertex1, vertex2, vertex3))  
+                    if (IsPointInTriangle(pickingRay.Origin + t * pickingRay.Direction, vertex1, vertex2, vertex3))  
                         return true; // Der Ray kollidiert mit diesem Objekt.
                 }
             }
@@ -184,7 +183,7 @@ namespace cgimin.engine.object3d
             Matrix4 rotation = Matrix4.CreateRotationX(angle);
             Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
             Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
-            this.Transformation *= combinedMatrix;
+            Transformation *= combinedMatrix;
         }
         //This function rotates the object around the Z axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
         //TODO Auch für Y machen
@@ -195,11 +194,7 @@ namespace cgimin.engine.object3d
             Matrix4 rotation = Matrix4.CreateRotationZ(angle);
             Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
             Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
-            this.Transformation *= combinedMatrix;
+            Transformation *= combinedMatrix;
         }
-
-
-
-
     }
 }
