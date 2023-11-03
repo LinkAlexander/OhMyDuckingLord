@@ -134,7 +134,17 @@ namespace cgimin.engine.object3d
         public bool RayIntersectsObject(PickingRay pickingRay)
         {
             //Ray minus Transformation
-            pickingRay = new PickingRay(pickingRay.Origin - Transformation.ExtractTranslation(), pickingRay.Destination - Transformation.ExtractTranslation());
+            Vector3 origin = pickingRay.Origin - Transformation.ExtractTranslation();
+            Vector3 destination = pickingRay.Destination - Transformation.ExtractTranslation();
+            
+            origin = Vector3.Transform(origin, Transformation.ExtractRotation());
+            destination = Vector3.Transform(destination, Transformation.ExtractRotation());
+            
+            pickingRay = new PickingRay(origin, destination);
+            //TODO prüfen, ob das mit der Rotation jetzt passt
+            
+            //pickingRay = new PickingRay(pickingRay.Origin - Transformation.ExtractTranslation(), pickingRay.Destination - Transformation.ExtractTranslation());
+            
             for (int i = 0; i < Positions.Count; i += 3)
             {
                 Vector3 vertex1 = Positions[i];
@@ -185,7 +195,6 @@ namespace cgimin.engine.object3d
             Transformation *= combinedMatrix;
         }
         //This function rotates the object around the Z axis, indifferent to position. By moving the object to the origin, rotating it, and then moving it back to its original position
-        //TODO Auch für Y machen
         public void RotateObjectZ(float angle)
         {
             Vector3 oldPosition = this.Transformation.ExtractTranslation();
@@ -193,6 +202,15 @@ namespace cgimin.engine.object3d
             Matrix4 rotation = Matrix4.CreateRotationZ(angle);
             Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
             Matrix4 combinedMatrix = translationToOrigin * rotation * translationBack;
+            Transformation *= combinedMatrix;
+        }
+        public void ScaleInPlace(float factor)
+        {
+            Vector3 oldPosition = this.Transformation.ExtractTranslation();
+            Matrix4 translationToOrigin = Matrix4.CreateTranslation(-oldPosition);
+            Matrix4 scalation = Matrix4.CreateScale(factor);
+            Matrix4 translationBack = Matrix4.CreateTranslation(oldPosition);
+            Matrix4 combinedMatrix = translationToOrigin * scalation * translationBack;
             Transformation *= combinedMatrix;
         }
     }

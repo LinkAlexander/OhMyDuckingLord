@@ -28,14 +28,14 @@ namespace cgi
     public class ExampleProject : GameWindow
     {
 
-        private float cameraSpeed = 0.1f;
+        private float cameraSpeed = 0.001f;
         
         // the 3D-Object we load
         private List<ObjLoaderObject3D> ducks;
         private ObjLoaderObject3D street = null!;
 
-        //private ObjLoaderObject3D torusstart;
-        private ObjLoaderObject3D torusend;
+        private ObjLoaderObject3D rayStartMarker;
+        private ObjLoaderObject3D rayEndMarker;
         
         // our texture-IDs
         private int woodTexture;
@@ -116,8 +116,8 @@ namespace cgi
                 duck.Transformation *= Matrix4.CreateTranslation(count * 5, 0, -5);
                 count++;
             }
-            //torusstart = new ObjLoaderObject3D("data/objects/cube.obj");
-            torusend = new ObjLoaderObject3D("data/objects/cube.obj");
+            rayStartMarker = new ObjLoaderObject3D("data/objects/cube.obj");
+            rayEndMarker = new ObjLoaderObject3D("data/objects/cube.obj");
             
             // Loading the texture
             woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
@@ -134,19 +134,22 @@ namespace cgi
         }
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
+            
             float mouseX = MousePosition.X;
-            float mouseY = MousePosition.Y;
-            
+            float mouseY = -MousePosition.Y + Size.Y; //Warum ist die Mausposition nicht ganz korrekt?
+            Console.WriteLine(mouseY);
             Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
-            //torusstart.Transformation = Matrix4.CreateTranslation(nearPoint);
-            
-            
             Vector3 farPoint =
-                Vector3.Unproject(new Vector3(mouseX, mouseY, Camera.Transformation.Inverted().ExtractTranslation().Z), 0, 0,
-                    Size.X, Size.Y, 0.01f, 1000f, Camera.Transformation.Inverted());
-            torusend.Transformation = Matrix4.CreateTranslation(farPoint);
-            torusend.Transformation *= Matrix4.CreateScale(0.005f);
-            pickingRay = new PickingRay(nearPoint /*- Camera.Transformation.ExtractTranslation()*/, farPoint /* - Camera.Transformation.ExtractTranslation()*/);
+                Vector3.Unproject(new Vector3(mouseX, mouseY, 0), Camera.Transformation.ExtractTranslation().X, Camera.Transformation.ExtractTranslation().Y,
+                    Size.X, Size.Y, 0, 1000.0f, Camera.Transformation.Inverted());
+            
+            
+            rayStartMarker.Transformation = Matrix4.CreateTranslation(nearPoint);
+            rayStartMarker.ScaleInPlace(0.05f);
+            rayEndMarker.Transformation = Matrix4.CreateTranslation(farPoint);
+            rayEndMarker.ScaleInPlace(0.05f);
+            
+            pickingRay = new PickingRay(nearPoint, farPoint );
             
             
             foreach (var duck in ducks)
@@ -211,14 +214,14 @@ namespace cgi
                 ambientDiffuseMaterial.Draw(duck, woodTexture,5);
             }
             
-            /*if (torusstart != null)
+            if (rayStartMarker != null)
             {
-                ambientDiffuseMaterial.Draw(torusstart,cellshading, 5);
-            }*/
+                ambientDiffuseMaterial.Draw(rayStartMarker,cellshading, 5);
+            }
 
-            if (torusend != null)
+            if (rayEndMarker != null)
             {
-                ambientDiffuseMaterial.Draw(torusend,cellshading, 5);  
+                ambientDiffuseMaterial.Draw(rayEndMarker,cellshading, 5);  
             }
             
             
