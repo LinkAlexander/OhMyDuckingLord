@@ -27,7 +27,7 @@ namespace cgimin.engine.camera
         public static void SetWidthHeightFov(int width, int height, float fov)
         {
             float aspectRatio = width / (float)height;
-            Matrix4.CreatePerspectiveFieldOfView((float)(fov * Math.PI / 180.0f), aspectRatio, 0.1f, 1000.0f, out perspectiveProjection);
+            Matrix4.CreatePerspectiveFieldOfView((float)(fov * Math.PI / 180.0f), aspectRatio, 1f, 1000.0f, out perspectiveProjection);
         }
 
 

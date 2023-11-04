@@ -137,15 +137,14 @@ namespace cgi
         {
              
             float mouseX = MousePosition.X;
-            float mouseY = -MousePosition.Y/2 + Size.Y*0.75f;
+            float mouseY = -MousePosition.Y + Size.Y;
             Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
                 Vector3 farPoint =
-                Vector3.Unproject(new Vector3(mouseX, mouseY, -0.01f), Camera.Transformation.ExtractTranslation().X,
+                Vector3.Unproject(new Vector3(mouseX, mouseY, nearPoint.Z - 1f), Camera.Transformation.ExtractTranslation().X,
                     Camera.Transformation.ExtractTranslation().Y,
-                    Size.X, Size.Y, 0.01f, 1000.0f, Camera.Transformation.Inverted());
-            //https://gamedev.stackexchange.com/questions/51820/how-can-i-convert-screen-coordinatess-to-world-coordinates-in-opentk.
-            // Vllt einfach den Punkt setzen und X und Y um einen Faktor skalieren?
-            //Unproject durchgehen und verstehen
+                    Size.X, Size.Y, 1f, 1000.0f, Camera.Transformation.Inverted());
+            //Aktuelle Änderungen: Near Clippling Plane auf 1 gesetzt (in Camera.Cs, Zeile 30)
+            //Das y macht iwie wieder faxen
             Console.WriteLine(farPoint);
             
             rayStartMarker.Transformation = Matrix4.CreateTranslation(nearPoint);
