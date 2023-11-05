@@ -137,7 +137,7 @@ namespace cgi
         {
              
             float mouseX = MousePosition.X;
-            float mouseY = -MousePosition.Y + Size.Y;
+            float mouseY = -MousePosition.Y*0.5f + Size.Y*0.75f;
             Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
                 Vector3 farPoint =
                 Vector3.Unproject(new Vector3(mouseX, mouseY, nearPoint.Z - 1f), Camera.Transformation.ExtractTranslation().X,
