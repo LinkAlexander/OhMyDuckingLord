@@ -36,7 +36,9 @@ namespace cgi
 
         private ObjLoaderObject3D rayStartMarker;
         private ObjLoaderObject3D rayEndMarker;
-        
+
+        private Vector3 right;
+        private Vector3 up;
         // our texture-IDs
         private int woodTexture;
         private int cellshading;
@@ -81,14 +83,6 @@ namespace cgi
                 Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
             }
 
-            if (e.Key == Keys.Up)
-            {
-                Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(90));
-            }
-            if (e.Key == Keys.Right)
-            {
-                Camera.Transformation *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(90));
-            }
             
             
         }
@@ -118,6 +112,10 @@ namespace cgi
                 duck.Transformation *= Matrix4.CreateTranslation(count * 5, 0, -5);
                 count++;
             }
+            
+            right = Camera.Transformation.Row0.Xyz;
+            up = Camera.Transformation.Row1.Xyz;
+            
             rayStartMarker = new ObjLoaderObject3D("data/objects/cube.obj");
             rayEndMarker = new ObjLoaderObject3D("data/objects/cube.obj");
             
@@ -167,11 +165,12 @@ namespace cgi
             //Get the change in mouse position and rotate the camera accordingly
             //fix the mouse to the middle of the screen
             //http://neokabuto.blogspot.com/2014/01/opentk-tutorial-5-basic-camera.html
+            Camera.Transformation *= Matrix4.CreateFromAxisAngle(up, MathHelper.DegreesToRadians(e.Delta.X * 0.1f));
+            Camera.Transformation *= Matrix4.CreateFromAxisAngle(right, MathHelper.DegreesToRadians(e.Delta.Y * 0.1f));
 
-            Camera.Transformation *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(e.Delta.X * 0.1f));
-            Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(e.Delta.Y * 0.1f));
             // Make Mouse function correctly
         }
+
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
@@ -193,10 +192,7 @@ namespace cgi
             if (KeyboardState.IsKeyDown(Keys.LeftControl) && Camera.Transformation.ExtractTranslation().Y < 0)
                 Camera.Transformation *= Matrix4.CreateTranslation(0, cameraSpeed, 0);
             
-            
-            //Press Backspace to reset the exampleObject to its original position
-            if (KeyboardState.IsKeyDown(Keys.Backspace))
-                Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
+
             // Camera speed up
             if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.2f;
             if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.1f;
