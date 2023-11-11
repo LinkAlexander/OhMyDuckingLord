@@ -3,7 +3,6 @@
 #region --- Using Directives ---
 
 using System.Drawing;
-using System.Numerics;
 using System.Security.Principal;
 using OpenTK.Graphics.OpenGL;
 using cgimin.engine.object3d;
@@ -59,6 +58,8 @@ namespace cgi
             simpleTextureMaterial = new SimpleTextureMaterial();
             wobbleMaterial = new Wobble2Material();
             ducks = new List<ObjLoaderObject3D>();
+            CursorState = CursorState.Grabbed;
+            
         }
 
 
@@ -135,16 +136,12 @@ namespace cgi
         }
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-             
-            float mouseX = MousePosition.X;
-            float mouseY = -MousePosition.Y*0.5f + Size.Y*0.75f;
             Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
                 Vector3 farPoint =
-                Vector3.Unproject(new Vector3(mouseX, mouseY, nearPoint.Z - 1f), Camera.Transformation.ExtractTranslation().X,
+                Vector3.Unproject(new Vector3(Size.X/2, Size.Y/2, nearPoint.Z - 1f), Camera.Transformation.ExtractTranslation().X,
                     Camera.Transformation.ExtractTranslation().Y,
                     Size.X, Size.Y, 1f, 1000.0f, Camera.Transformation.Inverted());
             //Aktuelle Änderungen: Near Clippling Plane auf 1 gesetzt (in Camera.Cs, Zeile 30)
-            //Das y macht iwie wieder faxen
             Console.WriteLine(farPoint);
             
             rayStartMarker.Transformation = Matrix4.CreateTranslation(nearPoint);
@@ -164,17 +161,22 @@ namespace cgi
             }
         }
 
+        protected override void OnMouseMove(MouseMoveEventArgs e)
+        {
+            base.OnMouseMove(e);
+            //Get the change in mouse position and rotate the camera accordingly
+            //fix the mouse to the middle of the screen
+            //http://neokabuto.blogspot.com/2014/01/opentk-tutorial-5-basic-camera.html
+
+            Camera.Transformation *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(e.Delta.X * 0.1f));
+            Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(e.Delta.Y * 0.1f));
+            // Make Mouse function correctly
+        }
+
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             // updateCounter simply increases
             updateTime += (float)e.Time;
-            //Move the camera according to mouse input
-            //Get the change in mouse position and rotate the camera accordingly
-            //var deltaX = MouseState.Delta.X;
-            //var deltaY = MouseState.Delta.Y;
-            //Camera.Transformation *= Matrix4.CreateRotationY(deltaX * 0.01f);
-            //Camera.Transformation *= Matrix4.CreateRotationX(deltaY * 0.01f);
-            //TODO Do we need this? perhaps let the cursor be freely movable and fixate the camera?
 
             int bound = 10;
             //Movement of the camera according to the keys pressed, only when within the boundaries
@@ -256,12 +258,10 @@ namespace cgi
         {
             var windowSettings = GameWindowSettings.Default;
             windowSettings.UpdateFrequency = 120;
-
             var nativeWindowSettings = NativeWindowSettings.Default;
             nativeWindowSettings.Flags = ContextFlags.ForwardCompatible | ContextFlags.Debug;
             nativeWindowSettings.Title = "CGI-MIN Example";
             nativeWindowSettings.WindowState = WindowState.Fullscreen;
-
             using var example = new ExampleProject(1920, 1080, windowSettings, nativeWindowSettings);
             example.Run();
         }
