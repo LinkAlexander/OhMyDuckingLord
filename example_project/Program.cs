@@ -13,6 +13,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using cgimin.engine.material.ambientdiffuse;
+using OpenTK.Windowing.Common.Input;
 using Vector3 = OpenTK.Mathematics.Vector3;
 using Vector4 = OpenTK.Mathematics.Vector4;
 
@@ -51,8 +52,7 @@ namespace cgi
             simpleTextureMaterial = new SimpleTextureMaterial();
             wobbleMaterial = new Wobble2Material();
             ducks = new List<ObjLoaderObject3D>();
-            CursorState = CursorState.Grabbed;
-            
+            Cursor = MouseCursor.Crosshair;
         }
 
 
@@ -68,7 +68,7 @@ namespace cgi
                     WindowState = WindowState.Fullscreen;       
 
             if(e.Key == Keys.Space)
-                pickDuck();
+                PickDuck();
             //Press Backspace to reset the exampleObject to its original position
             if (e.Key == Keys.Backspace) 
             {
@@ -117,7 +117,7 @@ namespace cgi
         }
 
         private int score = 0;
-        protected void pickDuck()
+        protected void PickDuck()
         {
             Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
                 Vector3 farPoint =
@@ -138,6 +138,7 @@ namespace cgi
         
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
+            
             // updateCounter simply increases
             updateTime += (float)e.Time;
 
@@ -151,29 +152,20 @@ namespace cgi
                 Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
             if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -bound)
                 Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);
-            //if (KeyboardState.IsKeyDown(Keys.Space)&& Camera.Transformation.ExtractTranslation().Y > -bound)
-            //    Camera.Transformation *= Matrix4.CreateTranslation(0, -cameraSpeed, 0);
-            //if (KeyboardState.IsKeyDown(Keys.LeftControl) && Camera.Transformation.ExtractTranslation().Y < 0)
-            //    Camera.Transformation *= Matrix4.CreateTranslation(0, cameraSpeed, 0);
-            //if(KeyboardState.IsKeyDown(Keys.Up))
-            //    Camera.Transformation *= Matrix4.CreateRotationX(-cameraSpeed);
-            //if(KeyboardState.IsKeyDown(Keys.Down))
-            //    Camera.Transformation *= Matrix4.CreateRotationX(cameraSpeed);
             if(KeyboardState.IsKeyDown(Keys.Left))
                 Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed);
             if(KeyboardState.IsKeyDown(Keys.Right))
                 Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed);
             
-
             // Camera speed up
             if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.1f;
             if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.05f;
-            
         }
 
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
+            MousePosition = new Vector2(Size.X/2, Size.Y/2);
             // specify the clear color
             GL.ClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
