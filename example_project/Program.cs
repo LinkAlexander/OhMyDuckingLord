@@ -1,9 +1,6 @@
 ﻿
 
 #region --- Using Directives ---
-
-using System.Drawing;
-using System.Security.Principal;
 using OpenTK.Graphics.OpenGL;
 using cgimin.engine.object3d;
 using cgimin.engine.texture;
@@ -16,7 +13,6 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using cgimin.engine.material.ambientdiffuse;
-using OpenTK.Windowing.Common.Input;
 using Vector3 = OpenTK.Mathematics.Vector3;
 using Vector4 = OpenTK.Mathematics.Vector4;
 
@@ -33,12 +29,7 @@ namespace cgi
         // the 3D-Object we load
         private List<ObjLoaderObject3D> ducks;
         private ObjLoaderObject3D street = null!;
-
-        private ObjLoaderObject3D rayStartMarker;
-        private ObjLoaderObject3D rayEndMarker;
-
-        private Vector3 right;
-        private Vector3 up;
+        
         // our texture-IDs
         private int woodTexture;
         private int cellshading;
@@ -76,14 +67,13 @@ namespace cgi
                 else
                     WindowState = WindowState.Fullscreen;       
 
-            
+            if(e.Key == Keys.Space)
+                pickDuck();
             //Press Backspace to reset the exampleObject to its original position
             if (e.Key == Keys.Backspace) 
             {
                 Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
             }
-
-            
             
         }
         
@@ -94,7 +84,6 @@ namespace cgi
             updateTime = 0;
             //Lighting
             Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
-            
             // Initialize Camera
             Camera.Init();
             Camera.SetWidthHeightFov(1920, 1080, 60);
@@ -113,12 +102,6 @@ namespace cgi
                 count++;
             }
             
-            right = Camera.Transformation.Row0.Xyz;
-            up = Camera.Transformation.Row1.Xyz;
-            
-            rayStartMarker = new ObjLoaderObject3D("data/objects/cube.obj");
-            rayEndMarker = new ObjLoaderObject3D("data/objects/cube.obj");
-            
             // Loading the texture
             woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
             cellshading = TextureManager.LoadTexture("data/textures/cellshading.png");
@@ -132,46 +115,27 @@ namespace cgi
             GL.CullFace(CullFaceMode.Front);
 
         }
-        protected override void OnMouseDown(MouseButtonEventArgs e)
+
+        private int score = 0;
+        protected void pickDuck()
         {
             Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
                 Vector3 farPoint =
                 Vector3.Unproject(new Vector3(Size.X/2, Size.Y/2, nearPoint.Z - 1f), Camera.Transformation.ExtractTranslation().X,
                     Camera.Transformation.ExtractTranslation().Y,
                     Size.X, Size.Y, 1f, 1000.0f, Camera.Transformation.Inverted());
-            //Aktuelle Änderungen: Near Clippling Plane auf 1 gesetzt (in Camera.Cs, Zeile 30)
-            Console.WriteLine(farPoint);
-            
-            rayStartMarker.Transformation = Matrix4.CreateTranslation(nearPoint);
-            rayStartMarker.ScaleInPlace(0.05f);
-            rayEndMarker.Transformation = Matrix4.CreateTranslation(farPoint);
-            rayEndMarker.ScaleInPlace(0.05f);
-            
             pickingRay = new PickingRay(nearPoint, farPoint );
-            
-            
             foreach (var duck in ducks)
             {
                 if (duck.RayIntersectsObject(pickingRay))
                 {
-                    duck.RotateObjectX(MathHelper.DegreesToRadians(90));
+                    duck.Transformation *= Matrix4.CreateTranslation(0, -500, 0);
+                    score++;
+                    Console.WriteLine("Score: " + score);
                 }
             }
         }
-
-        protected override void OnMouseMove(MouseMoveEventArgs e)
-        {
-            base.OnMouseMove(e);
-            //Get the change in mouse position and rotate the camera accordingly
-            //fix the mouse to the middle of the screen
-            //http://neokabuto.blogspot.com/2014/01/opentk-tutorial-5-basic-camera.html
-            Camera.Transformation *= Matrix4.CreateFromAxisAngle(up, MathHelper.DegreesToRadians(e.Delta.X * 0.1f));
-            Camera.Transformation *= Matrix4.CreateFromAxisAngle(right, MathHelper.DegreesToRadians(e.Delta.Y * 0.1f));
-
-            // Make Mouse function correctly
-        }
-
-
+        
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             // updateCounter simply increases
@@ -187,15 +151,23 @@ namespace cgi
                 Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
             if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -bound)
                 Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);
-            if (KeyboardState.IsKeyDown(Keys.Space)&& Camera.Transformation.ExtractTranslation().Y > -bound)
-                Camera.Transformation *= Matrix4.CreateTranslation(0, -cameraSpeed, 0);
-            if (KeyboardState.IsKeyDown(Keys.LeftControl) && Camera.Transformation.ExtractTranslation().Y < 0)
-                Camera.Transformation *= Matrix4.CreateTranslation(0, cameraSpeed, 0);
+            //if (KeyboardState.IsKeyDown(Keys.Space)&& Camera.Transformation.ExtractTranslation().Y > -bound)
+            //    Camera.Transformation *= Matrix4.CreateTranslation(0, -cameraSpeed, 0);
+            //if (KeyboardState.IsKeyDown(Keys.LeftControl) && Camera.Transformation.ExtractTranslation().Y < 0)
+            //    Camera.Transformation *= Matrix4.CreateTranslation(0, cameraSpeed, 0);
+            //if(KeyboardState.IsKeyDown(Keys.Up))
+            //    Camera.Transformation *= Matrix4.CreateRotationX(-cameraSpeed);
+            //if(KeyboardState.IsKeyDown(Keys.Down))
+            //    Camera.Transformation *= Matrix4.CreateRotationX(cameraSpeed);
+            if(KeyboardState.IsKeyDown(Keys.Left))
+                Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed);
+            if(KeyboardState.IsKeyDown(Keys.Right))
+                Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed);
             
 
             // Camera speed up
-            if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.2f;
-            if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.1f;
+            if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.1f;
+            if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.05f;
             
         }
 
@@ -214,18 +186,6 @@ namespace cgi
             {
                 ambientDiffuseMaterial.Draw(duck, woodTexture,5);
             }
-            
-            if (rayStartMarker != null)
-            {
-                ambientDiffuseMaterial.Draw(rayStartMarker,cellshading, 5);
-            }
-
-            if (rayEndMarker != null)
-            {
-                ambientDiffuseMaterial.Draw(rayEndMarker,cellshading, 5);  
-            }
-            
-            
             SwapBuffers();
         }
 
