@@ -92,7 +92,7 @@ namespace cgi
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
-            street = new ObjLoaderObject3D("data/objects/simpleStreet.obj");
+            street = new ObjLoaderObject3D("data/objects/spring.obj");
             //Once the Object is loaded, put it in front of the camera
             int count = 0; 
             street.Transformation *= Matrix4.CreateTranslation(10, -5, -10);
@@ -104,7 +104,7 @@ namespace cgi
             
             // Loading the texture
             woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
-            cellshading = TextureManager.LoadTexture("data/textures/cellshading.png");
+            cellshading = TextureManager.LoadTexture("data/textures/spring.png");
 
             
             // enable z-buffer
