@@ -127,12 +127,10 @@ namespace cgi
             pickingRay = new PickingRay(nearPoint, farPoint );
             foreach (var duck in ducks)
             {
-                if (duck.RayIntersectsObject(pickingRay))
-                {
-                    duck.Transformation *= Matrix4.CreateTranslation(0, -500, 0);
-                    score++;
-                    Console.WriteLine("Score: " + score);
-                }
+                if (!duck.RayIntersectsObject(pickingRay)) continue;
+                duck.Transformation *= Matrix4.CreateTranslation(0, -500, 0);
+                score++;
+                Console.WriteLine("Score: " + score);
             }
         }
         
