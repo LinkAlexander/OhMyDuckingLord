@@ -98,7 +98,7 @@ namespace cgi
             street.Transformation *= Matrix4.CreateTranslation(10, -5, -10);
             foreach (var duck in ducks)
             {
-                duck.Transformation *= Matrix4.CreateTranslation(count * 5, 0, -5);
+                duck.Transformation = Matrix4.CreateTranslation(count * 5, 0, -5);
                 count++;
             }
             
