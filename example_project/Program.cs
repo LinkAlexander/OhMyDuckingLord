@@ -19,197 +19,195 @@ using Vector4 = OpenTK.Mathematics.Vector4;
 
 #endregion --- Using Directives ---
 
-namespace cgi
+namespace cgi;
+
+public class ExampleProject : GameWindow
 {
 
-    public class ExampleProject : GameWindow
+    private float cameraSpeed = 0.001f;
+        
+    // the 3D-Object we load
+    private List<ObjLoaderObject3D> ducks;
+    private ObjLoaderObject3D street = null!;
+        
+    // our texture-IDs
+    private int woodTexture;
+    private int cellshading;
+    // Materials
+    private SimpleTextureMaterial simpleTextureMaterial;
+    private Wobble2Material wobbleMaterial;
+
+    private PickingRay pickingRay;
+
+    // Updating the time
+    private float updateTime;
+
+    public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings, 
+        NativeWindowSettings nativeWindowSettings)
+        : base(gameWindowSettings, nativeWindowSettings) {
+        Size = (width, height);
+        KeyDown += KeyboardKeyDown;
+        // initialize materials
+        simpleTextureMaterial = new SimpleTextureMaterial();
+        wobbleMaterial = new Wobble2Material();
+        ducks = new List<ObjLoaderObject3D>();
+        Cursor = MouseCursor.Crosshair;
+    }
+
+
+    void KeyboardKeyDown(KeyboardKeyEventArgs e)
     {
+        if (e.Key == Keys.Escape)
+            Close();
 
-        private float cameraSpeed = 0.001f;
+        if (e.Key == Keys.F11)
+            if (WindowState == WindowState.Fullscreen)
+                WindowState = WindowState.Normal;
+            else
+                WindowState = WindowState.Fullscreen;       
+
+        if(e.Key == Keys.Space)
+            PickDuck();
+        //Press Backspace to reset the exampleObject to its original position
+        if (e.Key == Keys.Backspace) 
+        {
+            Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
+        }
+            
+    }
         
-        // the 3D-Object we load
-        private List<ObjLoaderObject3D> ducks;
-        private ObjLoaderObject3D street = null!;
+    protected override void OnLoad()
+    {
+            
+        base.OnLoad();
+        updateTime = 0;
+        //Lighting
+        Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
+        // Initialize Camera
+        Camera.Init();
+        Camera.SetWidthHeightFov(1920, 1080, 60);
+            
+        // Loading the object
+        ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
+        ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
+        ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
+        street = new ObjLoaderObject3D("data/objects/spring.obj");
+        //Once the Object is loaded, put it in front of the camera
+        int count = 0; 
+        street.Transformation *= Matrix4.CreateTranslation(10, -5, -10);
+        foreach (var duck in ducks)
+        {
+            duck.Transformation = Matrix4.CreateTranslation(count * 5, 0, -5);
+            count++;
+        }
+            
+        // Loading the texture
+        woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
+        cellshading = TextureManager.LoadTexture("data/textures/spring.png");
+
+            
+        // enable z-buffer
+        GL.Enable(EnableCap.DepthTest);
+
+        // backface culling enabled
+        GL.Enable(EnableCap.CullFace);
+        GL.CullFace(CullFaceMode.Front);
+
+    }
+
+    private int score = 0;
+    protected void PickDuck()
+    {
+        Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
+        Vector3 farPoint =
+            Vector3.Unproject(new Vector3(Size.X/2, Size.Y/2, nearPoint.Z - 1f), Camera.Transformation.ExtractTranslation().X,
+                Camera.Transformation.ExtractTranslation().Y,
+                Size.X, Size.Y, 1f, 1000.0f, Camera.Transformation.Inverted());
+        pickingRay = new PickingRay(nearPoint, farPoint );
+        foreach (var duck in ducks)
+        {
+            if (!duck.RayIntersectsObject(pickingRay)) continue;
+            duck.Transformation *= Matrix4.CreateTranslation(0, -500, 0);
+            score++;
+            Console.WriteLine("Score: " + score);
+        }
+    }
         
-        // our texture-IDs
-        private int woodTexture;
-        private int cellshading;
-        // Materials
-        private SimpleTextureMaterial simpleTextureMaterial;
-        private Wobble2Material wobbleMaterial;
-
-        private PickingRay pickingRay;
-
-        // Updating the time
-        private float updateTime;
-
-        public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings, 
-            NativeWindowSettings nativeWindowSettings)
-            : base(gameWindowSettings, nativeWindowSettings) {
-            Size = (width, height);
-            KeyDown += KeyboardKeyDown;
-            // initialize materials
-            simpleTextureMaterial = new SimpleTextureMaterial();
-            wobbleMaterial = new Wobble2Material();
-            ducks = new List<ObjLoaderObject3D>();
-            Cursor = MouseCursor.Crosshair;
-        }
-
-
-        void KeyboardKeyDown(KeyboardKeyEventArgs e)
-        {
-            if (e.Key == Keys.Escape)
-                Close();
-
-            if (e.Key == Keys.F11)
-                if (WindowState == WindowState.Fullscreen)
-                    WindowState = WindowState.Normal;
-                else
-                    WindowState = WindowState.Fullscreen;       
-
-            if(e.Key == Keys.Space)
-                PickDuck();
-            //Press Backspace to reset the exampleObject to its original position
-            if (e.Key == Keys.Backspace) 
-            {
-                Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
-            }
+    protected override void OnUpdateFrame(FrameEventArgs e)
+    {
             
-        }
-        
-        protected override void OnLoad()
-        {
+        // updateCounter simply increases
+        updateTime += (float)e.Time;
+
+        int bound = 10;
+        //Movement of the camera according to the keys pressed, only when within the boundaries
+        if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
+            Camera.Transformation *= Matrix4.CreateTranslation(0, 0, cameraSpeed);
+        if (KeyboardState.IsKeyDown(Keys.S) && Camera.Transformation.ExtractTranslation().Z > -bound)
+            Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -cameraSpeed);
+        if (KeyboardState.IsKeyDown(Keys.A)&& Camera.Transformation.ExtractTranslation().X < bound)
+            Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
+        if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -bound)
+            Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);
+        if(KeyboardState.IsKeyDown(Keys.Left))
+            Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed);
+        if(KeyboardState.IsKeyDown(Keys.Right))
+            Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed);
             
-            base.OnLoad();
-            updateTime = 0;
-            //Lighting
-            Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
-            // Initialize Camera
-            Camera.Init();
-            Camera.SetWidthHeightFov(1920, 1080, 60);
+        // Camera speed up
+        if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.1f;
+        if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.05f;
+    }
+
+
+    protected override void OnRenderFrame(FrameEventArgs e)
+    {
+        MousePosition = new Vector2(Size.X/2, Size.Y/2);
+        // specify the clear color
+        GL.ClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+
+        // the screen color and the depth-buffer are cleared
+        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             
-            // Loading the object
-            ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
-            ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
-            ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
-            street = new ObjLoaderObject3D("data/objects/spring.obj");
-            //Once the Object is loaded, put it in front of the camera
-            int count = 0; 
-            street.Transformation *= Matrix4.CreateTranslation(10, -5, -10);
-            foreach (var duck in ducks)
-            {
-                duck.Transformation = Matrix4.CreateTranslation(count * 5, 0, -5);
-                count++;
-            }
-            
-            // Loading the texture
-            woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
-            cellshading = TextureManager.LoadTexture("data/textures/spring.png");
-
-            
-            // enable z-buffer
-            GL.Enable(EnableCap.DepthTest);
-
-            // backface culling enabled
-            GL.Enable(EnableCap.CullFace);
-            GL.CullFace(CullFaceMode.Front);
-
-        }
-
-        private int score = 0;
-        protected void PickDuck()
+        AmbientDiffuseSpecularMaterial ambientDiffuseMaterial = new AmbientDiffuseSpecularMaterial();
+        ambientDiffuseMaterial.Draw(street, cellshading,5);
+        foreach (var duck in ducks)
         {
-            Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
-                Vector3 farPoint =
-                Vector3.Unproject(new Vector3(Size.X/2, Size.Y/2, nearPoint.Z - 1f), Camera.Transformation.ExtractTranslation().X,
-                    Camera.Transformation.ExtractTranslation().Y,
-                    Size.X, Size.Y, 1f, 1000.0f, Camera.Transformation.Inverted());
-            pickingRay = new PickingRay(nearPoint, farPoint );
-            foreach (var duck in ducks)
-            {
-                if (!duck.RayIntersectsObject(pickingRay)) continue;
-                duck.Transformation *= Matrix4.CreateTranslation(0, -500, 0);
-                score++;
-                Console.WriteLine("Score: " + score);
-            }
+            ambientDiffuseMaterial.Draw(duck, woodTexture,5);
         }
-        
-        protected override void OnUpdateFrame(FrameEventArgs e)
+        SwapBuffers();
+    }
+
+
+    protected override void OnUnload()
+    {
+        foreach (var duck in ducks)
         {
-            
-            // updateCounter simply increases
-            updateTime += (float)e.Time;
-
-            int bound = 10;
-            //Movement of the camera according to the keys pressed, only when within the boundaries
-            if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
-                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, cameraSpeed);
-            if (KeyboardState.IsKeyDown(Keys.S) && Camera.Transformation.ExtractTranslation().Z > -bound)
-                Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -cameraSpeed);
-            if (KeyboardState.IsKeyDown(Keys.A)&& Camera.Transformation.ExtractTranslation().X < bound)
-                Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
-            if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -bound)
-                Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);
-            if(KeyboardState.IsKeyDown(Keys.Left))
-                Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed);
-            if(KeyboardState.IsKeyDown(Keys.Right))
-                Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed);
-            
-            // Camera speed up
-            if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.1f;
-            if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.05f;
+            duck.UnLoad();
         }
 
-
-        protected override void OnRenderFrame(FrameEventArgs e)
-        {
-            MousePosition = new Vector2(Size.X/2, Size.Y/2);
-            // specify the clear color
-            GL.ClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-
-            // the screen color and the depth-buffer are cleared
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            
-            AmbientDiffuseSpecularMaterial ambientDiffuseMaterial = new AmbientDiffuseSpecularMaterial();
-            ambientDiffuseMaterial.Draw(street, cellshading,5);
-            foreach (var duck in ducks)
-            {
-                ambientDiffuseMaterial.Draw(duck, woodTexture,5);
-            }
-            SwapBuffers();
-        }
+        street.UnLoad();
+    }
 
 
-        protected override void OnUnload()
-        {
-            foreach (var duck in ducks)
-            {
-                duck.UnLoad();
-            }
-
-            street.UnLoad();
-        }
+    protected override void OnResize(ResizeEventArgs e)
+    {
+        Size = e.Size;
+        GL.Viewport(0, 0, Size.X, Size.Y);
+        Camera.SetWidthHeightFov(Size.X, Size.Y, 60);
+    }
 
 
-        protected override void OnResize(ResizeEventArgs e)
-        {
-            Size = e.Size;
-            GL.Viewport(0, 0, Size.X, Size.Y);
-            Camera.SetWidthHeightFov(Size.X, Size.Y, 60);
-        }
-
-
-        [STAThread]
-        public static void Main()
-        {
-            var windowSettings = GameWindowSettings.Default;
-            windowSettings.UpdateFrequency = 120;
-            var nativeWindowSettings = NativeWindowSettings.Default;
-            nativeWindowSettings.Flags = ContextFlags.ForwardCompatible | ContextFlags.Debug;
-            nativeWindowSettings.Title = "CGI-MIN Example";
-            nativeWindowSettings.WindowState = WindowState.Fullscreen;
-            using var example = new ExampleProject(1920, 1080, windowSettings, nativeWindowSettings);
-            example.Run();
-        }
+    [STAThread]
+    public static void Main()
+    {
+        var windowSettings = GameWindowSettings.Default;
+        windowSettings.UpdateFrequency = 120;
+        var nativeWindowSettings = NativeWindowSettings.Default;
+        nativeWindowSettings.Flags = ContextFlags.ForwardCompatible | ContextFlags.Debug;
+        nativeWindowSettings.Title = "CGI-MIN Example";
+        nativeWindowSettings.WindowState = WindowState.Fullscreen;
+        using var example = new ExampleProject(1920, 1080, windowSettings, nativeWindowSettings);
+        example.Run();
     }
 }
