@@ -6,6 +6,7 @@ using cgimin.engine.object3d;
 using cgimin.engine.texture;
 using cgimin.engine.material.simpletexture;
 using cgimin.engine.camera;
+using cgimin.engine.gui;
 using cgimin.engine.material.wobble2;
 using cgimin.engine.light;
 using OpenTK.Mathematics;
@@ -25,14 +26,19 @@ public class ExampleProject : GameWindow
 {
 
     private float cameraSpeed = 0.001f;
-        
+
+    private BitmapGraphic logoSprite;
+    private BitmapFont bitmapFont;
+
     // the 3D-Object we load
     private List<ObjLoaderObject3D> ducks;
     private ObjLoaderObject3D street = null!;
-        
+
     // our texture-IDs
     private int woodTexture;
+
     private int cellshading;
+
     // Materials
     private SimpleTextureMaterial simpleTextureMaterial;
     private Wobble2Material wobbleMaterial;
@@ -42,9 +48,10 @@ public class ExampleProject : GameWindow
     // Updating the time
     private float updateTime;
 
-    public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings, 
+    public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings,
         NativeWindowSettings nativeWindowSettings)
-        : base(gameWindowSettings, nativeWindowSettings) {
+        : base(gameWindowSettings, nativeWindowSettings)
+    {
         Size = (width, height);
         KeyDown += KeyboardKeyDown;
         // initialize materials
@@ -64,33 +71,39 @@ public class ExampleProject : GameWindow
             if (WindowState == WindowState.Fullscreen)
                 WindowState = WindowState.Normal;
             else
-                WindowState = WindowState.Fullscreen;       
+                WindowState = WindowState.Fullscreen;
 
-        if(e.Key == Keys.Space)
+        if (e.Key == Keys.Space)
             PickDuck();
         //Press Backspace to reset the exampleObject to its original position
-        if (e.Key == Keys.Backspace) 
+        if (e.Key == Keys.Backspace)
         {
             Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
         }
-            
+
     }
-        
+
     protected override void OnLoad()
     {
-            
+
         base.OnLoad();
         updateTime = 0;
         //Lighting
-        Light.SetDirectionalLight(new Vector3(1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1), new Vector4(1,1,1,1));
+        Light.SetDirectionalLight(new Vector3(1, 1, 1), new Vector4(1, 1, 1, 1), new Vector4(1, 1, 1, 1),
+            new Vector4(1, 1, 1, 1));
         // Initialize Camera
         Camera.Init();
         Camera.SetWidthHeightFov(1920, 1080, 60);
-            
+        int duckCount = 5;
         // Loading the object
-        ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
-        ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
-        ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));
+        for (int i = 0; i < duckCount; i++)
+        {
+            ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));            
+        }
+
+
+        
+        
         street = new ObjLoaderObject3D("data/objects/spring.obj");
         //Once the Object is loaded, put it in front of the camera
         int count = 0; 
@@ -105,14 +118,16 @@ public class ExampleProject : GameWindow
         woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
         cellshading = TextureManager.LoadTexture("data/textures/spring.png");
 
-            
+        int spriteTexture = TextureManager.LoadTexture("data/textures/sprites.png");
+        logoSprite = new BitmapGraphic(spriteTexture, 256, 256, 10, 110, 196, 120);
+        bitmapFont = new BitmapFont("data/fonts/abel_normal.fnt", "data/fonts/abel_normal.png");    
+        
         // enable z-buffer
         GL.Enable(EnableCap.DepthTest);
 
         // backface culling enabled
         GL.Enable(EnableCap.CullFace);
         GL.CullFace(CullFaceMode.Front);
-
     }
 
     private int score = 0;
@@ -175,6 +190,13 @@ public class ExampleProject : GameWindow
         {
             ambientDiffuseMaterial.Draw(duck, woodTexture,5);
         }
+        GL.Disable(EnableCap.CullFace);
+
+        
+        bitmapFont.DrawString("Score: " + score, -Size.X/2, -Size.Y/2, 255, 255, 255, 255);
+
+        GL.Enable(EnableCap.CullFace);
+        
         SwapBuffers();
     }
 
