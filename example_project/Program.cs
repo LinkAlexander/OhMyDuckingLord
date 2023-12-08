@@ -104,7 +104,7 @@ public class ExampleProject : GameWindow
 
         
         
-        street = new ObjLoaderObject3D("data/objects/spring.obj");
+        street = new ObjLoaderObject3D("data/objects/bigscene.obj");
         //Once the Object is loaded, put it in front of the camera
         int count = 0; 
         street.Transformation *= Matrix4.CreateTranslation(10, -5, -10);
@@ -116,7 +116,7 @@ public class ExampleProject : GameWindow
             
         // Loading the texture
         woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
-        cellshading = TextureManager.LoadTexture("data/textures/spring.png");
+        cellshading = TextureManager.LoadTexture("data/textures/bigscene1.png");
 
         int spriteTexture = TextureManager.LoadTexture("data/textures/sprites.png");
         logoSprite = new BitmapGraphic(spriteTexture, 256, 256, 10, 110, 196, 120);

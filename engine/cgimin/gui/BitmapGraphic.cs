@@ -91,8 +91,7 @@ namespace cgimin.engine.gui
 
             if (program == -1)
             {
-                program = ShaderCompiler.CreateShaderProgram("cgimin/gui/shader/BitmapFont_VS.glsl", "cgimin/gui/shader/BitmapGraphic_FS.glsl");
-                GL.BindAttribLocation(program, 0, "in_position");
+                program = ShaderCompiler.CreateShaderProgram("cgimin/gui/shader/BitmapFont_VS.glsl", "cgimin/gui/shader/BitmapGraphic_FS.glsl");                GL.BindAttribLocation(program, 0, "in_position");
                 GL.BindAttribLocation(program, 1, "in_uv");
                 GL.LinkProgram(program);
 
