@@ -100,9 +100,6 @@ public class ExampleProject : GameWindow
         {
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));            
         }
-
-
-        
         
         street = new ObjLoaderObject3D("data/objects/bigscene.obj");
         //Once the Object is loaded, put it in front of the camera
@@ -128,6 +125,8 @@ public class ExampleProject : GameWindow
         // backface culling enabled
         GL.Enable(EnableCap.CullFace);
         GL.CullFace(CullFaceMode.Front);
+
+        Camera.Transformation = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
     }
 
     private int score = 0;
@@ -154,7 +153,7 @@ public class ExampleProject : GameWindow
         // updateCounter simply increases
         updateTime += (float)e.Time;
 
-        int bound = 10;
+        int bound = 100;
         //Movement of the camera according to the keys pressed, only when within the boundaries
         if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
             Camera.Transformation *= Matrix4.CreateTranslation(0, 0, cameraSpeed);
