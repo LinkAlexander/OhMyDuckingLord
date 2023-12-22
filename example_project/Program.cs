@@ -25,7 +25,7 @@ namespace cgi;
 public class ExampleProject : GameWindow
 {
 
-    private float cameraSpeed = 0.001f;
+    private float cameraSpeed = 0.01f;
 
     private BitmapGraphic logoSprite;
     private BitmapFont bitmapFont;
@@ -78,7 +78,8 @@ public class ExampleProject : GameWindow
         //Press Backspace to reset the exampleObject to its original position
         if (e.Key == Keys.Backspace)
         {
-            Camera.Transformation = Matrix4.CreateTranslation(0, 0, 0);
+            Camera.Transformation = Matrix4.CreateTranslation(0,-3,0);
+            Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
         }
 
     }
@@ -103,12 +104,13 @@ public class ExampleProject : GameWindow
         
         street = new ObjLoaderObject3D("data/objects/bigscene.obj");
         //Once the Object is loaded, put it in front of the camera
-        int count = 0; 
-        street.Transformation *= Matrix4.CreateTranslation(10, -5, -10);
+         
+        street.Transformation *= Matrix4.CreateTranslation(0, -5, -10);
+        int duckPlacementCounter = -2;
         foreach (var duck in ducks)
         {
-            duck.Transformation = Matrix4.CreateTranslation(count * 5, 0, -5);
-            count++;
+            duck.Transformation = Matrix4.CreateTranslation(duckPlacementCounter * 5, 0, -5);
+            duckPlacementCounter++;
         }
             
         // Loading the texture
@@ -125,8 +127,7 @@ public class ExampleProject : GameWindow
         // backface culling enabled
         GL.Enable(EnableCap.CullFace);
         GL.CullFace(CullFaceMode.Front);
-
-        Camera.Transformation = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
+        
     }
 
     private int score = 0;
@@ -144,6 +145,7 @@ public class ExampleProject : GameWindow
             duck.Transformation *= Matrix4.CreateTranslation(0, -500, 0);
             score++;
             Console.WriteLine("Score: " + score);
+            cameraSpeed *= score;
         }
     }
         
@@ -153,24 +155,30 @@ public class ExampleProject : GameWindow
         // updateCounter simply increases
         updateTime += (float)e.Time;
 
-        int bound = 100;
+        int bound = 25;
         //Movement of the camera according to the keys pressed, only when within the boundaries
-        if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
+        /*if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
             Camera.Transformation *= Matrix4.CreateTranslation(0, 0, cameraSpeed);
         if (KeyboardState.IsKeyDown(Keys.S) && Camera.Transformation.ExtractTranslation().Z > -bound)
             Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -cameraSpeed);
         if (KeyboardState.IsKeyDown(Keys.A)&& Camera.Transformation.ExtractTranslation().X < bound)
             Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
         if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);
+            Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);*/
+
+
+        if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
+            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,-cameraSpeed,cameraSpeed));
+        if (KeyboardState.IsKeyDown(Keys.S) && -Camera.Transformation.ExtractTranslation().Z < bound)
+            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,cameraSpeed,-cameraSpeed));
+        if (KeyboardState.IsKeyDown(Keys.A) && Camera.Transformation.ExtractTranslation().X < bound)
+            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(cameraSpeed,0,0));
+        if (KeyboardState.IsKeyDown(Keys.D) && -Camera.Transformation.ExtractTranslation().X < bound)
+            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(-cameraSpeed,0,0));
         if(KeyboardState.IsKeyDown(Keys.Left))
             Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed);
         if(KeyboardState.IsKeyDown(Keys.Right))
             Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed);
-            
-        // Camera speed up
-        if (KeyboardState.IsKeyDown(Keys.LeftShift)) cameraSpeed = 0.1f;
-        if (KeyboardState.IsKeyReleased(Keys.LeftShift)) cameraSpeed = 0.05f;
     }
 
 
