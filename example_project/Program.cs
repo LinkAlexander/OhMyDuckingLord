@@ -77,13 +77,15 @@ public class ExampleProject : GameWindow
             PickDuck();
         //Press Backspace to reset the exampleObject to its original position
         if (e.Key == Keys.Backspace)
-        {
-            Camera.Transformation = Matrix4.CreateTranslation(0,-3,0);
-            Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
-        }
+            resetCamera();
 
     }
 
+    void resetCamera()
+    {
+        Camera.Transformation = Matrix4.CreateTranslation(0,-3,0);
+        Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
+    }
     protected override void OnLoad()
     {
 
@@ -95,6 +97,8 @@ public class ExampleProject : GameWindow
         // Initialize Camera
         Camera.Init();
         Camera.SetWidthHeightFov(1920, 1080, 60);
+        resetCamera();
+        
         int duckCount = 5;
         // Loading the object
         for (int i = 0; i < duckCount; i++)
@@ -145,7 +149,7 @@ public class ExampleProject : GameWindow
             duck.Transformation *= Matrix4.CreateTranslation(0, -500, 0);
             score++;
             Console.WriteLine("Score: " + score);
-            cameraSpeed *= score;
+            cameraSpeed += 0.05f;
         }
     }
         
