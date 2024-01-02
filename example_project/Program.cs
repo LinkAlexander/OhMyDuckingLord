@@ -106,7 +106,7 @@ public class ExampleProject : GameWindow
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));            
         }
         
-        street = new ObjLoaderObject3D("data/objects/bigscene.obj");
+        street = new ObjLoaderObject3D("data/objects/szene.obj");
         //Once the Object is loaded, put it in front of the camera
          
         street.Transformation *= Matrix4.CreateTranslation(0, -5, -10);
@@ -119,7 +119,7 @@ public class ExampleProject : GameWindow
             
         // Loading the texture
         woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
-        cellshading = TextureManager.LoadTexture("data/textures/bigscene1.png");
+        cellshading = TextureManager.LoadTexture("data/textures/szene-texture-paint.png");
 
         int spriteTexture = TextureManager.LoadTexture("data/textures/sprites.png");
         logoSprite = new BitmapGraphic(spriteTexture, 256, 256, 10, 110, 196, 120);
