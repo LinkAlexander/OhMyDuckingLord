@@ -161,15 +161,6 @@ public class ExampleProject : GameWindow
 
         int bound = 25;
         //Movement of the camera according to the keys pressed, only when within the boundaries
-        /*if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(0, 0, cameraSpeed);
-        if (KeyboardState.IsKeyDown(Keys.S) && Camera.Transformation.ExtractTranslation().Z > -bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -cameraSpeed);
-        if (KeyboardState.IsKeyDown(Keys.A)&& Camera.Transformation.ExtractTranslation().X < bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
-        if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);*/
-
 
         if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
             Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,-cameraSpeed,cameraSpeed));
