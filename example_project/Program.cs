@@ -14,7 +14,6 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using cgimin.engine.material.ambientdiffuse;
-using Microsoft.VisualBasic.CompilerServices;
 using OpenTK.Windowing.Common.Input;
 using Vector3 = OpenTK.Mathematics.Vector3;
 using Vector4 = OpenTK.Mathematics.Vector4;
@@ -25,7 +24,6 @@ namespace cgi;
 
 public class ExampleProject : GameWindow
 {
-
     private float cameraSpeed = 0.15f;
 
     private BitmapGraphic logoSprite;
@@ -35,12 +33,9 @@ public class ExampleProject : GameWindow
     // the 3D-Object we load
     private List<ObjLoaderObject3D> ducks;
     private ObjLoaderObject3D street = null!;
-
-    private int randomDuckNumber;
     
     // our texture-IDs
     private int woodTexture;
-
     private int cellshading;
 
     // Materials
@@ -49,13 +44,17 @@ public class ExampleProject : GameWindow
     private List<Vector3> duckPositions = new List<Vector3>();
     Vector3 unreachableposition = new Vector3(99999, 99999, 9999);
     private PickingRay pickingRay;
-
+    private String printString;
+    private int printStringX;
+    private int randomDuckNumber;
+    private int printStringY;
     // Updating the time
     private float updateTime;
-    
+
+    private int lastrandom = 999;
     //Gameplay Timer 
     private static float timer; 
-    private readonly  float starttimer = 3;
+    private readonly  float starttimer = 20;
     public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings,
         NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -68,45 +67,37 @@ public class ExampleProject : GameWindow
         ducks = new List<ObjLoaderObject3D>();
         Cursor = MouseCursor.Crosshair;
     }
-
-
     void KeyboardKeyDown(KeyboardKeyEventArgs e)
     {
         if (e.Key == Keys.Escape)
             Close();
-
         if (e.Key == Keys.F11)
             if (WindowState == WindowState.Fullscreen)
                 WindowState = WindowState.Normal;
             else
                 WindowState = WindowState.Fullscreen;
-
         if (e.Key == Keys.Space)
             PickDuck();
-        //Press Backspace to reset the exampleObject to its original position
+        //Press Backspace to reset the Camera
         if (e.Key == Keys.Backspace)
-            resetCamera();
-
+            Camera.Reset();
     }
 
-    void resetCamera()
-    {
-        Camera.Transformation = Matrix4.CreateTranslation(0,-20,-10);
-        Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
-    }
     protected override void OnLoad()
     {
-
         base.OnLoad();
         updateTime = 0;
         //Lighting
-        Light.SetDirectionalLight(new Vector3(1, 1, 1), new Vector4(0.5f, 0.5f, 0.5f, 1), new Vector4(0.5f, 0.5f, 0.5f, 1),
+        Light.SetDirectionalLight(new Vector3(0, 100, 100), 
+            new Vector4(0.5f, 0.5f, 0.5f, 1), 
+            new Vector4(0.5f, 0.5f, 0.5f, 1),
             new Vector4(0f, 0f, 0f, 1));
         // Initialize Camera
         Camera.Init();
         Camera.SetWidthHeightFov(1920, 1080, 60);
-        resetCamera();
-        
+        Camera.Reset();
+        printStringX = -Size.X/2;
+        printStringY = -Size.Y/2;
         duckPositions.Add(new Vector3(10.3f,3.8f,-17.3f)); //Ente Bank
         duckPositions.Add(new Vector3(-3,4f,-8f)); //Ente Auto
         duckPositions.Add(new Vector3(17.5f,5f,5f)); //Ente Brunnen
@@ -120,57 +111,49 @@ public class ExampleProject : GameWindow
         duckPositions.Add(new Vector3(0f,3f,-35f)); //Ente Straße oben
         duckPositions.Add(new Vector3(21f,6f,-5f)); //Ente Garage rechts mitte
         duckPositions.Add(new Vector3(25f,3.5f,-20f)); //Ente hinter haus oben rechts
-
-        
-        
         int duckCount = duckPositions.Count;
         // Loading the object
         for (int i = 0; i < duckCount; i++)
         {
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));            
         }
-        
         street = new ObjLoaderObject3D("data/objects/szene.obj");
         //Once the Object is loaded, put it in front of the camera
-        
         street.Transformation *= Matrix4.CreateTranslation(0, 0, -10);
-        int duckPlacementCounter = 1;
         foreach (var duck in ducks)
         {
-            if (duckPlacementCounter > duckCount) duckPlacementCounter = duckCount;
             duck.Transformation = Matrix4.CreateTranslation(unreachableposition);
-            duckPlacementCounter++;
         }
         placeOneDuck();
         // Loading the texture
         woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
         cellshading = TextureManager.LoadTexture("data/textures/szene-texture2.png");
-
         int spriteTexture = TextureManager.LoadTexture("data/textures/sprites.png");
         logoSprite = new BitmapGraphic(spriteTexture, 256, 256, 10, 110, 196, 120);
         bitmapFont = new BitmapFont("data/fonts/abel_normal.fnt", "data/fonts/abel_normal.png");    
-        
         // enable z-buffer
         GL.Enable(EnableCap.DepthTest);
-
         // backface culling enabled
         GL.Enable(EnableCap.CullFace);
         GL.CullFace(CullFaceMode.Front);
         
     }
-
-    protected void placeOneDuck()
+    private void placeOneDuck()
     {
         Random rnd = new Random();
-        int randomDuckNumber = rnd.Next(ducks.Count-1);
+        //Ensuring that the ducks position changes each time
+        while (lastrandom == randomDuckNumber)
+        {
+            randomDuckNumber = rnd.Next(ducks.Count-1);    
+        }
+        lastrandom = randomDuckNumber;
         ducks[randomDuckNumber].Transformation = Matrix4.CreateTranslation(duckPositions[randomDuckNumber]);
         ducks[randomDuckNumber].ScaleInPlace(0.1f);
         ducks[randomDuckNumber].RotateObjectX(rnd.Next(360));
         ducks[randomDuckNumber].RotateObjectZ(rnd.Next(360));
     }
-    
     private int score = 0;
-    protected void PickDuck()
+    private void PickDuck()
     {
         Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
         Vector3 farPoint =
@@ -187,7 +170,8 @@ public class ExampleProject : GameWindow
             updateTime = 0;
             placeOneDuck();
         }
-        //Console.WriteLine(Camera.Transformation.Inverted().ExtractTranslation());
+        //Use this line to print the camera position. Useful for placing the ducks
+        Console.WriteLine(Camera.Transformation.Inverted().ExtractTranslation());
     }
         
     protected override void OnUpdateFrame(FrameEventArgs e)
@@ -196,40 +180,49 @@ public class ExampleProject : GameWindow
         // updateCounter simply increases
         updateTime += (float)e.Time;
         timer = starttimer - updateTime* score/5;
-        if (timer <= 0)
+        if (timer <= 0 || score == ducks.Count)
         {
-            resetCamera();
-            
-            bitmapFont.DrawString("GAME OVER \n " +
-                                  "Score: " + score, -Size.X, -Size.Y, 255, 255, 255, 255);
-               //TODO Label richtig setzen
+            if(score == ducks.Count())
+            {
+                printString = "Winner Winner Duck Dinner!";
+            }
+            if (timer <= 0)
+            {
+                printString = "Time's Up! Your Score was: " + score;
+            }
+            //Wir brauchen deine Hilfe! Die Enten haben die Stadt übernommen und wir brauchen deine Hilfe, um sie zu vertreiben. Du hast 20 Sekunden Zeit, um so viele Enten wie möglich zu schießen. Viel Glück!
+            Camera.Reset();
+            printStringX = -Size.X/8;
+            printStringY = 0;
+
         }
         else{
-        
-        int xbound = 28;
-        int zbound = 38;
-        //Movement of the camera according to the keys pressed, only when within the boundaries
+            int xBound = 28;
+            int zBound = 38;
+            //Movement of the camera according to the keys pressed, only when within the boundaries
 
-        if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < zbound-40)
-            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,-cameraSpeed,cameraSpeed));
-        if (KeyboardState.IsKeyDown(Keys.S) && -Camera.Transformation.ExtractTranslation().Z < zbound)
-            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,cameraSpeed,-cameraSpeed));
-        if (KeyboardState.IsKeyDown(Keys.A) && Camera.Transformation.ExtractTranslation().X < xbound)
-            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(cameraSpeed,0,0));
-        if (KeyboardState.IsKeyDown(Keys.D) && -Camera.Transformation.ExtractTranslation().X < xbound)
-            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(-cameraSpeed,0,0));
-        
-        if(KeyboardState.IsKeyDown(Keys.Up))
-            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,-cameraSpeed));
-        if(KeyboardState.IsKeyDown(Keys.Down))
-            Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,cameraSpeed));
-        
-        // Seitwärts gucken (funktioniert so halb)
-//        if (KeyboardState.IsKeyDown(Keys.E) && Camera.Transformation.ExtractTranslation().Y < bound)
-//            Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed/100);
-//        if (KeyboardState.IsKeyDown(Keys.Q) && Camera.Transformation.ExtractTranslation().Y < bound)
-//            Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed/100);
-
+            //TODO Kann man das optimieren?
+            if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < zBound-40)
+                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,-cameraSpeed,cameraSpeed));
+            if (KeyboardState.IsKeyDown(Keys.S) && -Camera.Transformation.ExtractTranslation().Z < zBound)
+                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,cameraSpeed,-cameraSpeed));
+            if (KeyboardState.IsKeyDown(Keys.A) && Camera.Transformation.ExtractTranslation().X < xBound)
+                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(cameraSpeed,0,0));
+            if (KeyboardState.IsKeyDown(Keys.D) && -Camera.Transformation.ExtractTranslation().X < xBound)
+                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(-cameraSpeed,0,0));
+            
+            //TODO Debug mode?
+            if(KeyboardState.IsKeyDown(Keys.Up))
+                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,-cameraSpeed));
+            if(KeyboardState.IsKeyDown(Keys.Down))
+                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,cameraSpeed));
+            
+    //       Seitwärts gucken (funktioniert so halb)
+    //        if (KeyboardState.IsKeyDown(Keys.E) && Camera.Transformation.ExtractTranslation().Y < bound)
+    //            Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed/100);
+    //        if (KeyboardState.IsKeyDown(Keys.Q) && Camera.Transformation.ExtractTranslation().Y < bound)
+    //            Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed/100);
+                printString = "Score: " + score + " | Remaining Time:" + Math.Floor(timer);
         }
         
     }
@@ -250,9 +243,7 @@ public class ExampleProject : GameWindow
             ambientDiffuseMaterial.Draw(duck, woodTexture,0.1f);
         }
         GL.Disable(EnableCap.CullFace);
-        
-        bitmapFont.DrawString("Score: " + score + "| Remaining Time:" + Math.Floor(timer), -Size.X/2, -Size.Y/2, 255, 255, 255, 255);
-
+        bitmapFont.DrawString( printString, printStringX, printStringY, 255, 255, 255, 255);
         GL.Enable(EnableCap.CullFace);
         
         SwapBuffers();
@@ -285,7 +276,7 @@ public class ExampleProject : GameWindow
         windowSettings.UpdateFrequency = 120;
         var nativeWindowSettings = NativeWindowSettings.Default;
         nativeWindowSettings.Flags = ContextFlags.ForwardCompatible | ContextFlags.Debug;
-        nativeWindowSettings.Title = "CGI-MIN Example";
+        nativeWindowSettings.Title = "Oh My Ducking Lord";
         nativeWindowSettings.WindowState = WindowState.Fullscreen;
         using var example = new ExampleProject(1920, 1080, windowSettings, nativeWindowSettings);
         example.Run();

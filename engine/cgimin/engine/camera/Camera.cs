@@ -99,6 +99,12 @@ namespace cgimin.engine.camera
             CreateViewFrustumPlanes(transformation * perspectiveProjection);
         }
 
+        public static void Reset()
+        {
+            Transformation = Matrix4.CreateTranslation(0,-20,-10);
+            Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
+        }
+        
         // Steering update mouse camera
         public static void UpdateMouseCamera(float strafeSpeed, bool strafeLeft, bool strafeRight, bool moveForward, bool moveBack, float mouseDeltaUp, float mouseDeltaLeft)
         {
