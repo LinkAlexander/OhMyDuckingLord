@@ -29,6 +29,7 @@ public class ExampleProject : GameWindow
 
     private BitmapGraphic logoSprite;
     private BitmapFont bitmapFont;
+    private BitmapFont timermapFont;
 
     // the 3D-Object we load
     private List<ObjLoaderObject3D> ducks;
@@ -47,6 +48,9 @@ public class ExampleProject : GameWindow
 
     // Updating the time
     private float updateTime;
+    
+    //Gameplay Timer 
+    private static int timer = 45; 
 
     public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings,
         NativeWindowSettings nativeWindowSettings)
@@ -83,8 +87,8 @@ public class ExampleProject : GameWindow
 
     void resetCamera()
     {
-        Camera.Transformation = Matrix4.CreateTranslation(0,-3,0);
-        Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
+        Camera.Transformation = Matrix4.CreateTranslation(0,-15,-10);
+        Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(25));
     }
     protected override void OnLoad()
     {
@@ -93,7 +97,7 @@ public class ExampleProject : GameWindow
         updateTime = 0;
         //Lighting
         Light.SetDirectionalLight(new Vector3(1, 1, 1), new Vector4(1, 1, 1, 1), new Vector4(1, 1, 1, 1),
-            new Vector4(1, 1, 1, 1));
+            new Vector4(0, 0, 0, 0));
         // Initialize Camera
         Camera.Init();
         Camera.SetWidthHeightFov(1920, 1080, 60);
@@ -106,7 +110,7 @@ public class ExampleProject : GameWindow
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));            
         }
         
-        street = new ObjLoaderObject3D("data/objects/bigscene.obj");
+        street = new ObjLoaderObject3D("data/objects/szene.obj");
         //Once the Object is loaded, put it in front of the camera
          
         street.Transformation *= Matrix4.CreateTranslation(0, -5, -10);
@@ -119,7 +123,7 @@ public class ExampleProject : GameWindow
             
         // Loading the texture
         woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
-        cellshading = TextureManager.LoadTexture("data/textures/bigscene1.png");
+        cellshading = TextureManager.LoadTexture("data/textures/szene-texture-paint.png");
 
         int spriteTexture = TextureManager.LoadTexture("data/textures/sprites.png");
         logoSprite = new BitmapGraphic(spriteTexture, 256, 256, 10, 110, 196, 120);
@@ -170,13 +174,20 @@ public class ExampleProject : GameWindow
             Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(cameraSpeed,0,0));
         if (KeyboardState.IsKeyDown(Keys.D) && -Camera.Transformation.ExtractTranslation().X < bound)
             Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(-cameraSpeed,0,0));
-        if(KeyboardState.IsKeyDown(Keys.Left))
-            Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed);
-        if(KeyboardState.IsKeyDown(Keys.Right))
-            Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed);
+        
+        // Seitwärts gucken (funktioniert so halb)
+        if (KeyboardState.IsKeyDown(Keys.E) && Camera.Transformation.ExtractTranslation().Y < bound)
+            Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed+(float)Math.Sin(0.0001f));
+        if (KeyboardState.IsKeyDown(Keys.Q) && Camera.Transformation.ExtractTranslation().Y < bound)
+            Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed-(float)Math.Sin(0.0001f));
+        
+        
+        // if(KeyboardState.IsKeyDown(Keys.Left))
+        // Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed); 
+        // if(KeyboardState.IsKeyDown(Keys.Right))
+        // Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed);
     }
-
-
+    
     protected override void OnRenderFrame(FrameEventArgs e)
     {
         MousePosition = new Vector2(Size.X/2, Size.Y/2);
@@ -193,7 +204,6 @@ public class ExampleProject : GameWindow
             ambientDiffuseMaterial.Draw(duck, woodTexture,5);
         }
         GL.Disable(EnableCap.CullFace);
-
         
         bitmapFont.DrawString("Score: " + score, -Size.X/2, -Size.Y/2, 255, 255, 255, 255);
 
