@@ -202,20 +202,26 @@ public class ExampleProject : GameWindow
             //Movement of the camera according to the keys pressed, only when within the boundaries
 
             //TODO Kann man das optimieren?
-            if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < zBound-40)
-                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,-cameraSpeed,cameraSpeed));
-            if (KeyboardState.IsKeyDown(Keys.S) && -Camera.Transformation.ExtractTranslation().Z < zBound)
-                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,cameraSpeed,-cameraSpeed));
-            if (KeyboardState.IsKeyDown(Keys.A) && Camera.Transformation.ExtractTranslation().X < xBound)
-                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(cameraSpeed,0,0));
-            if (KeyboardState.IsKeyDown(Keys.D) && -Camera.Transformation.ExtractTranslation().X < xBound)
-                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(-cameraSpeed,0,0));
             
+            Vector3 movementVektor = new Vector3(0,0,0);
+            
+            
+            if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < zBound-40)
+                movementVektor += new Vector3(0,-cameraSpeed,cameraSpeed);
+            if (KeyboardState.IsKeyDown(Keys.S) && -Camera.Transformation.ExtractTranslation().Z < zBound)
+                movementVektor += new Vector3(0,cameraSpeed,-cameraSpeed);
+            if (KeyboardState.IsKeyDown(Keys.A) && Camera.Transformation.ExtractTranslation().X < xBound)
+                movementVektor += new Vector3(cameraSpeed,0,0);
+            if (KeyboardState.IsKeyDown(Keys.D) && -Camera.Transformation.ExtractTranslation().X < xBound)
+                movementVektor += new Vector3(-cameraSpeed,0,0);
+            
+            Camera.Transformation *= Matrix4.CreateTranslation(movementVektor);
+                
             //TODO Debug mode?
-            if(KeyboardState.IsKeyDown(Keys.Up))
-                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,-cameraSpeed));
-            if(KeyboardState.IsKeyDown(Keys.Down))
-                Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,cameraSpeed));
+            //if(KeyboardState.IsKeyDown(Keys.Up))
+            //    Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,-cameraSpeed));
+            //if(KeyboardState.IsKeyDown(Keys.Down))
+            //    Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,cameraSpeed));
             
     //       Seitwärts gucken (funktioniert so halb)
     //        if (KeyboardState.IsKeyDown(Keys.E) && Camera.Transformation.ExtractTranslation().Y < bound)
