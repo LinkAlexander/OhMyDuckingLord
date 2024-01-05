@@ -14,6 +14,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using cgimin.engine.material.ambientdiffuse;
+using Microsoft.VisualBasic.CompilerServices;
 using OpenTK.Windowing.Common.Input;
 using Vector3 = OpenTK.Mathematics.Vector3;
 using Vector4 = OpenTK.Mathematics.Vector4;
@@ -25,7 +26,7 @@ namespace cgi;
 public class ExampleProject : GameWindow
 {
 
-    private float cameraSpeed = 0.01f;
+    private float cameraSpeed = 0.2f;
 
     private BitmapGraphic logoSprite;
     private BitmapFont bitmapFont;
@@ -50,8 +51,8 @@ public class ExampleProject : GameWindow
     private float updateTime;
     
     //Gameplay Timer 
-    private static int timer = 45; 
-
+    private static float timer; 
+    private readonly  float starttimer = 46;
     public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings,
         NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -88,7 +89,7 @@ public class ExampleProject : GameWindow
     void resetCamera()
     {
         Camera.Transformation = Matrix4.CreateTranslation(0,-15,-10);
-        Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(25));
+        Camera.Transformation *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45));
     }
     protected override void OnLoad()
     {
@@ -96,14 +97,14 @@ public class ExampleProject : GameWindow
         base.OnLoad();
         updateTime = 0;
         //Lighting
-        Light.SetDirectionalLight(new Vector3(1, 1, 1), new Vector4(1, 1, 1, 1), new Vector4(1, 1, 1, 1),
+        Light.SetDirectionalLight(new Vector3(1, 1, 1), new Vector4(0.5f, 0.5f, 0.5f, 1), new Vector4(0.5f, 0.5f, 0.5f, 1),
             new Vector4(0, 0, 0, 0));
         // Initialize Camera
         Camera.Init();
         Camera.SetWidthHeightFov(1920, 1080, 60);
         resetCamera();
         
-        int duckCount = 5;
+        int duckCount = 10;
         // Loading the object
         for (int i = 0; i < duckCount; i++)
         {
@@ -118,6 +119,7 @@ public class ExampleProject : GameWindow
         foreach (var duck in ducks)
         {
             duck.Transformation = Matrix4.CreateTranslation(duckPlacementCounter * 5, 0, -5);
+            duck.ScaleInPlace(0.3f);
             duckPlacementCounter++;
         }
             
@@ -152,9 +154,11 @@ public class ExampleProject : GameWindow
             if (!duck.RayIntersectsObject(pickingRay)) continue;
             duck.Transformation *= Matrix4.CreateTranslation(0, -500, 0);
             score++;
-            Console.WriteLine("Score: " + score);
-            cameraSpeed += 0.05f;
+            cameraSpeed *= 0.9f;
+            updateTime = 0;
+
         }
+
     }
         
     protected override void OnUpdateFrame(FrameEventArgs e)
@@ -162,18 +166,9 @@ public class ExampleProject : GameWindow
             
         // updateCounter simply increases
         updateTime += (float)e.Time;
-
+        timer = starttimer - updateTime* score/5;
         int bound = 25;
         //Movement of the camera according to the keys pressed, only when within the boundaries
-        /*if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(0, 0, cameraSpeed);
-        if (KeyboardState.IsKeyDown(Keys.S) && Camera.Transformation.ExtractTranslation().Z > -bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(0, 0, -cameraSpeed);
-        if (KeyboardState.IsKeyDown(Keys.A)&& Camera.Transformation.ExtractTranslation().X < bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(cameraSpeed, 0, 0);
-        if (KeyboardState.IsKeyDown(Keys.D)&& Camera.Transformation.ExtractTranslation().X > -bound)
-            Camera.Transformation *= Matrix4.CreateTranslation(-cameraSpeed, 0, 0);*/
-
 
         if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < bound)
             Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,-cameraSpeed,cameraSpeed));
@@ -189,12 +184,12 @@ public class ExampleProject : GameWindow
             Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed+(float)Math.Sin(0.0001f));
         if (KeyboardState.IsKeyDown(Keys.Q) && Camera.Transformation.ExtractTranslation().Y < bound)
             Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed-(float)Math.Sin(0.0001f));
-        
-        
-        // if(KeyboardState.IsKeyDown(Keys.Left))
-        // Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed); 
-        // if(KeyboardState.IsKeyDown(Keys.Right))
-        // Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed);
+
+
+        if (timer <= 0)
+        {
+            Close();
+        }
     }
     
     protected override void OnRenderFrame(FrameEventArgs e)
@@ -207,14 +202,14 @@ public class ExampleProject : GameWindow
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             
         AmbientDiffuseSpecularMaterial ambientDiffuseMaterial = new AmbientDiffuseSpecularMaterial();
-        ambientDiffuseMaterial.Draw(street, cellshading,5);
+        ambientDiffuseMaterial.Draw(street, cellshading,0.1f);
         foreach (var duck in ducks)
         {
-            ambientDiffuseMaterial.Draw(duck, woodTexture,5);
+            ambientDiffuseMaterial.Draw(duck, woodTexture,0.1f);
         }
         GL.Disable(EnableCap.CullFace);
         
-        bitmapFont.DrawString("Score: " + score, -Size.X/2, -Size.Y/2, 255, 255, 255, 255);
+        bitmapFont.DrawString("Score: " + score + "| Remaining Time:" + Math.Floor(timer), -Size.X/2, -Size.Y/2, 255, 255, 255, 255);
 
         GL.Enable(EnableCap.CullFace);
         
