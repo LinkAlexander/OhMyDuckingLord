@@ -123,7 +123,7 @@ public class ExampleProject : GameWindow
             
         // Loading the texture
         woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
-        cellshading = TextureManager.LoadTexture("data/textures/szene-texture-paint.png");
+        cellshading = TextureManager.LoadTexture("data/textures/szene-texture2.png");
 
         int spriteTexture = TextureManager.LoadTexture("data/textures/sprites.png");
         logoSprite = new BitmapGraphic(spriteTexture, 256, 256, 10, 110, 196, 120);
