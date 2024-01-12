@@ -7,7 +7,6 @@ using cgimin.engine.texture;
 using cgimin.engine.material.simpletexture;
 using cgimin.engine.camera;
 using cgimin.engine.gui;
-using cgimin.engine.material.wobble2;
 using cgimin.engine.light;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -22,14 +21,13 @@ using Vector4 = OpenTK.Mathematics.Vector4;
 
 namespace cgi;
 
-public class ExampleProject : GameWindow
+public class OhMyDuckingLordProject : GameWindow
 {
+    //Global Variables
+
+    // Camera Speed. Gets changed during the gameplay
     private float cameraSpeed = 0.15f;
-
-    private BitmapGraphic logoSprite;
-    private BitmapFont bitmapFont;
-    private BitmapFont timermapFont;
-
+    
     // the 3D-Object we load
     private List<ObjLoaderObject3D> ducks;
     private ObjLoaderObject3D street = null!;
@@ -38,24 +36,40 @@ public class ExampleProject : GameWindow
     private int woodTexture;
     private int cellshading;
 
-    // Materials
+    // Materials and Textures
     private SimpleTextureMaterial simpleTextureMaterial;
-    private Wobble2Material wobbleMaterial;
+    
+    //List of all duck positions
     private List<Vector3> duckPositions = new List<Vector3>();
+    
+    //Position where ducks go, that aren't on the map
     Vector3 unreachableposition = new Vector3(99999, 99999, 9999);
+    
+    //Picking Ray for picking the ducks
     private PickingRay pickingRay;
+    
+    //Variables for the printing Text to the Screen. Consists of a string and XY coordinates
     private String printString;
     private int printStringX;
-    private int randomDuckNumber;
     private int printStringY;
+    private BitmapFont bitmapFont;
+    private BitmapFont timermapFont;
+    private BitmapGraphic logoSprite;
+
+    
     // Updating the time
     private float updateTime;
-
+    //Variables used for the random duck placement
     private int lastrandom = 999;
+    private int randomDuckNumber;
     //Gameplay Timer 
     private static float timer; 
     private readonly  float starttimer = 20;
-    public ExampleProject(int width, int height, GameWindowSettings gameWindowSettings,
+    
+    private int score = 0;
+
+    
+    public OhMyDuckingLordProject(int width, int height, GameWindowSettings gameWindowSettings,
         NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
     {
@@ -63,7 +77,6 @@ public class ExampleProject : GameWindow
         KeyDown += KeyboardKeyDown;
         // initialize materials
         simpleTextureMaterial = new SimpleTextureMaterial();
-        wobbleMaterial = new Wobble2Material();
         ducks = new List<ObjLoaderObject3D>();
         Cursor = MouseCursor.Crosshair;
     }
@@ -81,6 +94,14 @@ public class ExampleProject : GameWindow
         //Press Backspace to reset the Camera
         if (e.Key == Keys.Backspace)
             Camera.Reset();
+        if (e.Key == Keys.F12)
+        {
+            score = 0;
+            Camera.Reset();
+            printStringX = -Size.X/2;
+            printStringY = -Size.Y/2;
+            cameraSpeed = 0.15f;
+        }
     }
 
     protected override void OnLoad()
@@ -138,6 +159,10 @@ public class ExampleProject : GameWindow
         GL.CullFace(CullFaceMode.Front);
         
     }
+    /// <summary>
+    /// Places one duck at a random position. These Positions are defined in the duckPositions List.
+    /// It is prevented that the same duck is placed twice in a row. It may appear multiple times however.
+    /// </summary>
     private void placeOneDuck()
     {
         Random rnd = new Random();
@@ -152,7 +177,12 @@ public class ExampleProject : GameWindow
         ducks[randomDuckNumber].RotateObjectX(rnd.Next(360));
         ducks[randomDuckNumber].RotateObjectZ(rnd.Next(360));
     }
-    private int score = 0;
+
+    /// <summary>
+    /// Duck picking algorithm. Works by creating a picking ray from the camera position to the center of the screen, where the crosshair is always located.
+    /// The picking Ray gets transformed into the object space of each duck and then gets checked for intersection with any triangle of the ducks model.
+    /// On a miss, nothing happens. On a hit, the Camera gets slower, another duck gets spawned and the score increases.
+    /// </summary>
     private void PickDuck()
     {
         Vector3 nearPoint = Camera.Transformation.Inverted().ExtractTranslation();
@@ -171,15 +201,16 @@ public class ExampleProject : GameWindow
             placeOneDuck();
         }
         //Use this line to print the camera position. Useful for placing the ducks
-        Console.WriteLine(Camera.Transformation.Inverted().ExtractTranslation());
+        //Console.WriteLine(Camera.Transformation.Inverted().ExtractTranslation());
     }
         
     protected override void OnUpdateFrame(FrameEventArgs e)
     {
-            
+        
         // updateCounter simply increases
         updateTime += (float)e.Time;
-        timer = starttimer - updateTime* score/5;
+        timer = starttimer - updateTime* (score)/5;
+        //Check if the win or loose condition are met. If so, print the appropriate message and fixate the camera
         if (timer <= 0 || score == ducks.Count)
         {
             if(score == ducks.Count())
@@ -190,45 +221,30 @@ public class ExampleProject : GameWindow
             {
                 printString = "Time's Up! Your Score was: " + score;
             }
-            //Wir brauchen deine Hilfe! Die Enten haben die Stadt übernommen und wir brauchen deine Hilfe, um sie zu vertreiben. Du hast 20 Sekunden Zeit, um so viele Enten wie möglich zu schießen. Viel Glück!
             Camera.Reset();
             printStringX = -Size.X/8;
             printStringY = 0;
 
         }
         else{
+            //Bounding areas for the camera. Prevents the camera from leaving the map
             int xBound = 28;
             int zBound = 38;
-            //Movement of the camera according to the keys pressed, only when within the boundaries
-
-            //TODO Kann man das optimieren?
             
-            Vector3 movementVektor = new Vector3(0,0,0);
-            
-            
+            //Creating a movement vector for the camera
+            Vector3 movementVector = new Vector3(0,0,0);
             if (KeyboardState.IsKeyDown(Keys.W) && Camera.Transformation.ExtractTranslation().Z < zBound-40)
-                movementVektor += new Vector3(0,-cameraSpeed,cameraSpeed);
+                movementVector += new Vector3(0,-1,1);
             if (KeyboardState.IsKeyDown(Keys.S) && -Camera.Transformation.ExtractTranslation().Z < zBound)
-                movementVektor += new Vector3(0,cameraSpeed,-cameraSpeed);
+                movementVector += new Vector3(0,1,-1);
             if (KeyboardState.IsKeyDown(Keys.A) && Camera.Transformation.ExtractTranslation().X < xBound)
-                movementVektor += new Vector3(cameraSpeed,0,0);
+                movementVector += new Vector3(1,0,0);
             if (KeyboardState.IsKeyDown(Keys.D) && -Camera.Transformation.ExtractTranslation().X < xBound)
-                movementVektor += new Vector3(-cameraSpeed,0,0);
+                movementVector += new Vector3(-1,0,0);
             
-            Camera.Transformation *= Matrix4.CreateTranslation(movementVektor);
-                
-            //TODO Debug mode?
-            //if(KeyboardState.IsKeyDown(Keys.Up))
-            //    Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,-cameraSpeed));
-            //if(KeyboardState.IsKeyDown(Keys.Down))
-            //    Camera.Transformation *= Matrix4.CreateTranslation(new Vector3(0,0,cameraSpeed));
-            
-    //       Seitwärts gucken (funktioniert so halb)
-    //        if (KeyboardState.IsKeyDown(Keys.E) && Camera.Transformation.ExtractTranslation().Y < bound)
-    //            Camera.Transformation *= Matrix4.CreateRotationY(cameraSpeed/100);
-    //        if (KeyboardState.IsKeyDown(Keys.Q) && Camera.Transformation.ExtractTranslation().Y < bound)
-    //            Camera.Transformation *= Matrix4.CreateRotationY(-cameraSpeed/100);
-                printString = "Score: " + score + " | Remaining Time:" + Math.Floor(timer);
+            if(movementVector.Length != 0)
+                Camera.Transformation *= Matrix4.CreateTranslation(movementVector.Normalized()*cameraSpeed);
+            printString = "Score: " + score + " | Remaining Time:" + Math.Floor(timer);
         }
         
     }
@@ -262,7 +278,6 @@ public class ExampleProject : GameWindow
         {
             duck.UnLoad();
         }
-
         street.UnLoad();
     }
 
@@ -284,7 +299,7 @@ public class ExampleProject : GameWindow
         nativeWindowSettings.Flags = ContextFlags.ForwardCompatible | ContextFlags.Debug;
         nativeWindowSettings.Title = "Oh My Ducking Lord";
         nativeWindowSettings.WindowState = WindowState.Fullscreen;
-        using var example = new ExampleProject(1920, 1080, windowSettings, nativeWindowSettings);
+        using var example = new OhMyDuckingLordProject(1920, 1080, windowSettings, nativeWindowSettings);
         example.Run();
     }
 }

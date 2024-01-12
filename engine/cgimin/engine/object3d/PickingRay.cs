@@ -8,6 +8,7 @@ public class PickingRay
         private Vector3 origin;
         private Vector3 direction;
         private Vector3 destination;
+        //Ray gets defined with 2 Vectors which are the origin and the destination
         public PickingRay(Vector3 origin, Vector3 destination)
         {
             this.origin = origin;
@@ -37,6 +38,7 @@ public class PickingRay
         {
             return "Origin: " + origin + ", Destination: " + destination + ", Direction: " + direction;
         }
+        //Override the * operator to multiply the ray with a scalar. Needed for collision detection
         public static PickingRay operator *(PickingRay ray, float scalar) {
             return new PickingRay(ray.Origin * scalar, ray.Direction * scalar);
         }
