@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="data" />
+    <Folder Include="data\doc\" />
     <Folder Include="Properties" />
   </ItemGroup>
 
@@ -140,7 +140,19 @@
     <None Update="data\textures\szene-texture-paint.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="data\textures\szene-texture2.png">
+    <None Update="data\textures\szene-texture.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\objects\szene-neu.obj">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\textures\szene-textur-neu-realistisch.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\textures\szene-textur-neu-gemalt.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\doc\NiceToKnow_Modelle+Texturen.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

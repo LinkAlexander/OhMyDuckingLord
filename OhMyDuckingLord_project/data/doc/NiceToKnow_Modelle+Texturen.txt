@@ -1,0 +1,24 @@
+Modelle (obj): 
+- Modelle der Straßen wurden selbst erstellt
+- Häuser wurden modelliert 
+- Lampen, Bänke, Autos, Brunnen wurden von kostenfrei heruntergeladen, angepasst und in die Szene geladen 
+	- https://free3d.com/
+	- https://www.turbosquid.com/
+
+
+Texturen 
+- Texturen von GIMP selbst wurden verwendet 
+- Texturen von https://www.pexels.com/ wurden verwendet
+
+
+Szene/UV Mapping
+- Da wir uns für eine große Szene entschieden haben, war das UV Mapping spannend und auch der Umgang mit Blender wurde in 
+    mehreren Iterationen (bigszene, plainstreet, simpleStreet, streetv2, usw. ...) erprobt, 
+    bis die finalen Objekte szene.obj und szene-neu.obj werden für das Game verwendet 
+- Das UV-Mapping wurde sorgfältig geplant (Skizzen dazu unter docs/uv-mapping-... in den jeweiligen PDFs, falls das jemand außer mir versteht)
+
+
+
+Beim/Fürs Spielen
+scene-texture.png für scene,obj 
+scene-texture-new-realistic.png ODER scene-texture-new-painted.jpg für scene-new.obj

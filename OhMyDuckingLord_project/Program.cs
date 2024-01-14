@@ -53,8 +53,8 @@ public class OhMyDuckingLordProject : GameWindow
     private int printStringX;
     private int printStringY;
     private BitmapFont bitmapFont;
-    private BitmapFont timermapFont;
     private BitmapGraphic logoSprite;
+    private BitmapFont infomapFont;
 
     
     // Updating the time
@@ -138,7 +138,11 @@ public class OhMyDuckingLordProject : GameWindow
         {
             ducks.Add(new ObjLoaderObject3D("data/objects/duck_smooth.obj"));            
         }
-        street = new ObjLoaderObject3D("data/objects/szene.obj");
+        
+        //new and old scene to improve texture (uv mapping)
+        street = new ObjLoaderObject3D("data/objects/szene-neu.obj");
+        //street = new ObjLoaderObject3D("data/objects/szene.obj");
+        
         //Once the Object is loaded, put it in front of the camera
         street.Transformation *= Matrix4.CreateTranslation(0, 0, -10);
         foreach (var duck in ducks)
@@ -148,10 +152,18 @@ public class OhMyDuckingLordProject : GameWindow
         placeOneDuck();
         // Loading the texture
         woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
-        cellshading = TextureManager.LoadTexture("data/textures/szene-texture2.png");
+        
+        //try different types of teturisation in gimp ("realistic" and "self-drawn") 
+        // !! note: szene-texture.png for szene,obj 
+        // !! note: szene-textur-neu-realistisch.png OR szene-textur-neu-gemalt.jpg for szene-neu.obj
+        //cellshading = TextureManager.LoadTexture("data/textures/szene-texture.png");
+        cellshading = TextureManager.LoadTexture("data/textures/szene-textur-neu-realistisch.png");
+        //cellshading = TextureManager.LoadTexture("data/textures/szene-textur-neu-gemalt.jpg");
+        
         int spriteTexture = TextureManager.LoadTexture("data/textures/sprites.png");
         logoSprite = new BitmapGraphic(spriteTexture, 256, 256, 10, 110, 196, 120);
-        bitmapFont = new BitmapFont("data/fonts/abel_normal.fnt", "data/fonts/abel_normal.png");    
+        bitmapFont = new BitmapFont("data/fonts/abel_normal.fnt", "data/fonts/abel_normal.png");   
+        infomapFont = new BitmapFont("data/fonts/abel_normal.fnt", "data/fonts/abel_normal.png");
         // enable z-buffer
         GL.Enable(EnableCap.DepthTest);
         // backface culling enabled
@@ -244,7 +256,8 @@ public class OhMyDuckingLordProject : GameWindow
             
             if(movementVector.Length != 0)
                 Camera.Transformation *= Matrix4.CreateTranslation(movementVector.Normalized()*cameraSpeed);
-            printString = "Score: " + score + " | Remaining Time:" + Math.Floor(timer);
+            printString = " score: " + score + " | remaining time: " + Math.Floor(timer);
+            
         }
         
     }
@@ -266,6 +279,8 @@ public class OhMyDuckingLordProject : GameWindow
         }
         GL.Disable(EnableCap.CullFace);
         bitmapFont.DrawString( printString, printStringX, printStringY, 255, 255, 255, 255);
+        infomapFont.DrawString(" move: [W][A][S][D] & shoot: [SPACE]" , 0, printStringY,
+            255, 255, 255, 255);
         GL.Enable(EnableCap.CullFace);
         
         SwapBuffers();
