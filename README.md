@@ -15,7 +15,7 @@ F12 = Neustarten des Spiels
 
 ## Credits
 Christin Schulze: 1661740
-Modellierung der Szene und Implementierung des Lightings
+Modellierung der Szene und Texturierung 
 
 Alexander Link: 1766509
 Implementierung der Kern Gamelogik und des Pickings.
