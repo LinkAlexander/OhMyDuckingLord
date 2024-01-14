@@ -20,5 +20,5 @@ Szene/UV Mapping
 
 
 Beim/Fürs Spielen
-scene-texture.png für scene,obj 
-scene-texture-new-realistic.png ODER scene-texture-new-painted.jpg für scene-new.obj
+ szene-texture.png für szene.obj 
+szene-textur-neu-realistisch.png ODER szene-textur-neu-gemalt.jpg für szene-neu.obj
