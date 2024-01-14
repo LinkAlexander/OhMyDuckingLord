@@ -24,7 +24,9 @@ namespace cgi;
 public class OhMyDuckingLordProject : GameWindow
 {
     //Global Variables
-
+    
+    bool gameover = false;
+    
     // Camera Speed. Gets changed during the gameplay
     private float cameraSpeed = 0.15f;
     
@@ -101,6 +103,7 @@ public class OhMyDuckingLordProject : GameWindow
             printStringX = -Size.X/2;
             printStringY = -Size.Y/2;
             cameraSpeed = 0.15f;
+            gameover = false;
         }
     }
 
@@ -225,6 +228,7 @@ public class OhMyDuckingLordProject : GameWindow
         //Check if the win or loose condition are met. If so, print the appropriate message and fixate the camera
         if (timer <= 0 || score == ducks.Count)
         {
+            gameover = true;
             if(score == ducks.Count())
             {
                 printString = "Winner Winner Duck Dinner!";
@@ -279,8 +283,13 @@ public class OhMyDuckingLordProject : GameWindow
         }
         GL.Disable(EnableCap.CullFace);
         bitmapFont.DrawString( printString, printStringX, printStringY, 255, 255, 255, 255);
-        infomapFont.DrawString(" move: [W][A][S][D] & shoot: [SPACE]" , 0, printStringY,
-            255, 255, 255, 255);
+        if (!gameover)
+        {
+            infomapFont.DrawString(" move: [W][A][S][D] & shoot: [SPACE]" , 0, printStringY, 
+                255, 255, 255, 255);
+        }
+            
+            
         GL.Enable(EnableCap.CullFace);
         
         SwapBuffers();
