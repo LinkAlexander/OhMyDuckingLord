@@ -35,7 +35,7 @@ public class OhMyDuckingLordProject : GameWindow
     private ObjLoaderObject3D street = null!;
     
     // our texture-IDs
-    private int woodTexture;
+    private int duckTexture;
     private int cellshading;
 
     // Materials and Textures
@@ -154,7 +154,7 @@ public class OhMyDuckingLordProject : GameWindow
         }
         placeOneDuck();
         // Loading the texture
-        woodTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
+        duckTexture = TextureManager.LoadTexture("data/textures/duck_texture.png");
         
         //try different types of teturisation in gimp ("realistic" and "self-drawn") 
         // !! note: szene-texture.png for szene,obj 
@@ -279,7 +279,7 @@ public class OhMyDuckingLordProject : GameWindow
         ambientDiffuseMaterial.Draw(street, cellshading,0.1f);
         foreach (var duck in ducks)
         {
-            ambientDiffuseMaterial.Draw(duck, woodTexture,0.1f);
+            ambientDiffuseMaterial.Draw(duck, duckTexture,0.1f);
         }
         GL.Disable(EnableCap.CullFace);
         bitmapFont.DrawString( printString, printStringX, printStringY, 255, 255, 255, 255);
